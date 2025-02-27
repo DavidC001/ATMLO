@@ -6,7 +6,7 @@ from functools import partial
 from typing import Dict, Optional, Sequence
 from torch.nn import functional as F
 import re
-import evaluate
+# import evaluate
 import os, random, argparse, sys, pickle, time, datasets, json
 import copy, torch
 from torch.utils.data import DataLoader, SequentialSampler, RandomSampler

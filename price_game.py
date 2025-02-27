@@ -13,18 +13,11 @@ __version__ = "10/05/2023"
 # %% [markdown]
 # ### Set-up
 
-# %%
-try:
-    # This library is our indicator that the required installs
-    # need to be done.
-    import pyvene
+import pyvene
 
-except ModuleNotFoundError:
-    !pip install git+https://github.com/stanfordnlp/pyvene.git
 
 # %%
 import torch
-import seaborn as sns
 from tqdm import tqdm, trange
 from datasets import Dataset
 from torch.utils.data import DataLoader
@@ -64,27 +57,27 @@ prealign_dataloader = DataLoader(prealign_dataset, batch_size=8)
 # %%
 total_count = 0
 correct_count = 0
-with torch.no_grad():
-    for step, inputs in enumerate(tqdm(prealign_dataloader)):
-        for k, v in inputs.items():
-            if v is not None and isinstance(v, torch.Tensor):
-                inputs[k] = v.to(llama.device)
+# with torch.no_grad():
+#     for step, inputs in enumerate(tqdm(prealign_dataloader)):
+#         for k, v in inputs.items():
+#             if v is not None and isinstance(v, torch.Tensor):
+#                 inputs[k] = v.to(llama.device)
 
-        # aligning forward!
-        outputs = llama(
-            input_ids=inputs["input_ids"],
-            labels=inputs["labels"],
-        )
+#         # aligning forward!
+#         outputs = llama(
+#             input_ids=inputs["input_ids"],
+#             labels=inputs["labels"],
+#         )
 
-        actual_test_labels = inputs["labels"][:, -1]
-        pred_test_labels = torch.argmax(outputs.logits[:, -1], dim=-1)
+#         actual_test_labels = inputs["labels"][:, -1]
+#         pred_test_labels = torch.argmax(outputs.logits[:, -1], dim=-1)
 
-        correct_labels = actual_test_labels == pred_test_labels
+#         correct_labels = actual_test_labels == pred_test_labels
 
-        total_count += len(correct_labels)
-        correct_count += correct_labels.sum().tolist()
-current_acc = round(correct_count / total_count, 2)
-print(f"[WARNING: THIS NEEDS TO BE GOOD!] prealign task accuracy: {current_acc}")
+#         total_count += len(correct_labels)
+#         correct_count += correct_labels.sum().tolist()
+# current_acc = round(correct_count / total_count, 2)
+# print(f"[WARNING: THIS NEEDS TO BE GOOD!] prealign task accuracy: {current_acc}")
 
 # %% [markdown]
 # ### Create training dataset for our trainable intervention (Boundless DAS)
