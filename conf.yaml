@@ -1,0 +1,9 @@
+model:
+  model_name: "meta-llama/Llama-3.2-3B-Instruct"
+  device: "cuda"
+  q_4b: False
+  q_8b: False
+
+dataset:
+  num_samples: 10
+  seed: 0
