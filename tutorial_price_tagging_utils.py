@@ -47,6 +47,19 @@ alpaca_prompt_template = f"""Below is an instruction that describes a task, pair
 ### Response:
 """
 
+llama_3prompt_template = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+%s<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+%s<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+"""
+
+prompt_template = {
+    "alpaca": alpaca_prompt_template,
+    "llama_3": llama_3prompt_template,
+}
+mode = "alpaca"
+
 
 def pricing_tag_game_config_sampler(amount, lower_bound, bound_width):
     if bound_width == None:
@@ -89,12 +102,12 @@ def pricing_tag_game_example_sampler(
 
     amount_str = "%.2f dollars" % amount_sample
     instruction = f"Please say yes only if it costs between {lower_bound_str} and {upper_bound_str} dollars, otherwise no."
-    alpaca_prompt = alpaca_prompt_template % (instruction, amount_str)
+    alpaca_prompt = prompt_template[mode] % (instruction, amount_str)
     input_ids = tokenizer(alpaca_prompt, return_tensors="pt").input_ids[0]
     output_ids = (torch.ones(input_ids.shape[0]) * -100).long().tolist()
     output_ids[-1] = label
     input_ids = input_ids.tolist()
-    assert len(input_ids) == 82
+    # assert len(input_ids) == 82
 
     return input_ids, output_ids
 
@@ -121,12 +134,12 @@ def pricing_tag_game_example_sampler_with_info(
 
     amount_str = "%.2f dollars" % amount_sample
     instruction = f"Please say yes only if it costs between {lower_bound_str} and {upper_bound_str} dollars, otherwise no."
-    alpaca_prompt = alpaca_prompt_template % (instruction, amount_str)
+    alpaca_prompt = prompt_template[mode] % (instruction, amount_str)
     input_ids = tokenizer(alpaca_prompt, return_tensors="pt").input_ids[0]
     output_ids = (torch.ones(input_ids.shape[0]) * -100).long().tolist()
     output_ids[-1] = label
     input_ids = input_ids.tolist()
-    assert len(input_ids) == 82
+    # assert len(input_ids) == 82
 
     return (
         input_ids,
@@ -262,11 +275,11 @@ def bound_alignment_sampler(
         base_instruction = f"Please say yes only if it costs between {base_lower_bound_str} and {base_upper_bound_str} dollars, otherwise no."
         source_instruction = f"Please say yes only if it costs between {source_lower_bound_str} and {source_upper_bound_str} dollars, otherwise no."
 
-        base_alpaca_prompt = alpaca_prompt_template % (
+        base_alpaca_prompt = prompt_template[mode] % (
             base_instruction,
             base_amount_str,
         )
-        source_alpaca_prompt = alpaca_prompt_template % (
+        source_alpaca_prompt = prompt_template[mode] % (
             source_instruction,
             source_amount_str,
         )
@@ -287,8 +300,8 @@ def bound_alignment_sampler(
         all_ctf_output_ids += [ctf_output_ids]
         all_intervention_ids += [intervention_id]
 
-        assert len(base_input_ids) == 82
-        assert len(source_input_ids) == 82
+        # assert len(base_input_ids) == 82
+        # assert len(source_input_ids) == 82
 
     return (
         all_base_input_ids,
@@ -351,8 +364,8 @@ def midpoint_alignment_sampler(
         base_instruction = f"Please say yes only if it costs between {base_lower_bound_str} and {base_upper_bound_str} dollars, otherwise no."
         source_instruction = f"Please say yes only if it costs between {source_lower_bound_str} and {source_upper_bound_str} dollars, otherwise no."
         
-        base_alpaca_prompt = alpaca_prompt_template % (base_instruction, base_amount_str)
-        source_alpaca_prompt = alpaca_prompt_template % (source_instruction, source_amount_str)
+        base_alpaca_prompt = prompt_template[mode] % (base_instruction, base_amount_str)
+        source_alpaca_prompt = prompt_template[mode] % (source_instruction, source_amount_str)
         
         base_input_ids = tokenizer(base_alpaca_prompt, return_tensors="pt").input_ids[0]
         source_input_ids = tokenizer(source_alpaca_prompt, return_tensors="pt").input_ids[0]
@@ -365,8 +378,8 @@ def midpoint_alignment_sampler(
         all_source_input_ids += [source_input_ids]
         all_ctf_output_ids += [ctf_output_ids]
         all_intervention_ids += [0]
-        assert len(base_input_ids) == 82
-        assert len(source_input_ids) == 82
+        # assert len(base_input_ids) == 82
+        # assert len(source_input_ids) == 82
         
     return all_base_input_ids, all_source_input_ids, all_ctf_output_ids, all_intervention_ids
 
@@ -421,8 +434,8 @@ def bracket_alignment_sampler(
         base_instruction = f"Please say yes only if it costs between {base_lower_bound_str} and {base_upper_bound_str} dollars, otherwise no."
         source_instruction = f"Please say yes only if it costs between {source_lower_bound_str} and {source_upper_bound_str} dollars, otherwise no."
         
-        base_alpaca_prompt = alpaca_prompt_template % (base_instruction, base_amount_str)
-        source_alpaca_prompt = alpaca_prompt_template % (source_instruction, source_amount_str)
+        base_alpaca_prompt = prompt_template[mode] % (base_instruction, base_amount_str)
+        source_alpaca_prompt = prompt_template[mode] % (source_instruction, source_amount_str)
         
         base_input_ids = tokenizer(base_alpaca_prompt, return_tensors="pt").input_ids[0]
         source_input_ids = tokenizer(source_alpaca_prompt, return_tensors="pt").input_ids[0]
@@ -435,7 +448,7 @@ def bracket_alignment_sampler(
         all_source_input_ids += [source_input_ids]
         all_ctf_output_ids += [ctf_output_ids]
         all_intervention_ids += [0]
-        assert len(base_input_ids) == 82
-        assert len(source_input_ids) == 82
+        # assert len(base_input_ids) == 82
+        # assert len(source_input_ids) == 82
         
     return all_base_input_ids, all_source_input_ids, all_ctf_output_ids, all_intervention_ids
