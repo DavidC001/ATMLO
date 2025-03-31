@@ -1,7 +1,7 @@
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+# import seaborn as sns
 from functools import partial
 from typing import Dict, Optional, Sequence
 from torch.nn import functional as F
@@ -524,9 +524,11 @@ def create_price_game_acdc_dataset(
         """
         instruction = (
             f"Please say yes only if it costs between "
-            f"{lb:.2f} and {ub:.2f} dollars, otherwise no."
+            f"{lb:.2f} and {ub:.2f} dollars, otherwise no.\n"
+            f"{amount:.2f} dollars"
         )
-        return instruction + f"\n\n{amount:.2f} dollars"
+        
+        return instruction
 
     def is_in_range(amount: float, lb: float, ub: float) -> bool:
         return (amount >= lb) and (amount <= ub)

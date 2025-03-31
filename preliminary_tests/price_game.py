@@ -31,6 +31,8 @@ set_seed(42)
 
 # Create the base LLaMA model, tokenizer, and config.
 # (The model is assumed to be the instruct-tuned LLaMA-7B.)
+# model = "gpt2"
+# price_utils.mode = "alpaca"
 model = "meta-llama/Llama-3.2-3B-Instruct"
 price_utils.mode = "llama_3"
 llama = AutoModelForCausalLM.from_pretrained(model, torch_dtype=torch.bfloat16)

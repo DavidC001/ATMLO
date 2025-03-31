@@ -27,18 +27,16 @@ def dataclass(*args, **kwargs):
 
     return wrapper(args[0]) if args else wrapper
 
-
 # =================================================================================================
-# Data Generation configuration
+# data_preprocessing configuration
 # =================================================================================================
 
 @dataclass
-class DataGenerationConfig:
-    num_samples: int = 100
-    seed: int = 42
-    
-    def __post_init__(self):
-        assert self.num_samples > 0, "num_samples must be greater than 0"
+class DataConfig:
+    dataset_dir: str = "datasets"
+    model_names: list = field(default_factory=lambda: ["EleutherAI/pythia-14m"])
+    input_jsons: list = field(default_factory=lambda: ["datasets/testing.json"])
+    templates: list = field(default_factory=lambda: ["LogicBench"])
 
 # =================================================================================================
 # Model configuration
@@ -48,8 +46,9 @@ class DataGenerationConfig:
 class ModelConfig:
     model_name: str = "meta-llama/Llama-3.2-3B-Instruct"
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
-    q_4b: bool = False
-    q_8b: bool = False
+    batch_size: int = 8
+    train_percent: float = 0.8
+    threshold: float = 1e-2
 
 # =================================================================================================
 # Project configuration
@@ -57,8 +56,11 @@ class ModelConfig:
 
 @dataclass
 class ProjectConfig:
-    dataset: DataGenerationConfig = field(default_factory=DataGenerationConfig)
+    out_dir : str = "results"
+    seed: int = 42
+    
     model: ModelConfig = field(default_factory=ModelConfig)
+    data_preprocessing: DataConfig = field(default_factory=DataConfig)
     
     
 def load_yaml_config(path) -> ProjectConfig:
