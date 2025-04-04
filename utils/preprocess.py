@@ -19,6 +19,29 @@ data_types = ["LogicBench(Aug)","LogicBench(Eval)/BQA"]
 bar = tqdm()
 
 def preprocess(model_name, tokenizer=None):
+    """
+    Preprocess the LogicBench dataset to create a json file with the following format:
+    {
+        "instruction": "Based on the given context, you have to respond with yes or no.",
+        "seq_labels": [],
+        "word_idxs": {},
+        "prompts": [
+            {
+                "clean": "the clean prompt",
+                "corrupt": "the corrupt prompt",
+                "answers": ["Yes", "yes"],
+                "wrong_answers": ["No", "no"],
+            }
+        ]
+    }
+    
+    Args:
+        model_name (str): The name of the model to use for tokenization.
+        tokenizer (AutoTokenizer): The tokenizer to use for tokenization. If None, the tokenizer will be loaded from the model_name.
+        
+    Returns:
+        None
+    """
     
     if tokenizer is None:
         tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -53,6 +76,7 @@ def preprocess(model_name, tokenizer=None):
                     "prompts": []
                 }
                 
+                max_token_length = 0
                 # parse the data
                 for sample in data[data_col]:
                     context = sample["context"]
@@ -80,17 +104,18 @@ def preprocess(model_name, tokenizer=None):
                     
                     assert tokenized_corrupt == tokenized_clean, f"the prompts do not have the same lenght clean:{tokenized_clean} corrupt:{tokenized_corrupt}\nclean: {clean}\ncorrupt: {corrupt}"
                     
+                    max_token_length = max(max_token_length, len(tokenizer.tokenize(clean)))
+                    
                     output_data["prompts"].append({
                         "clean": clean,
                         "corrupt": corrupt,
-                        "answers": ["yes"],
-                        "wrong_answers": ["no"],
+                        "answers": ["Yes", "yes"],
+                        "wrong_answers": ["No", "no"],
                     })
                     
                 # output data to file
                 json.dump(output_data, open(output_json_path, "w"), indent=1)
                 bar.update()
-            
                 
 if __name__ == "__main__":
     from config import ProjectConfig, load_yaml_config

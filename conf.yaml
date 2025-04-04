@@ -1,9 +1,12 @@
+exp_name: "ACDC"
+
 seed: 42
 
 out_dir: "results"
 
 data_preprocessing:
   dataset_dir: "datasets"
+  global_padding: False
 
   input_jsons: [
     "datasets/LogicBench/LogicBench(Aug)/propositional_logic/modus_tollens/data.json",
@@ -15,10 +18,9 @@ data_preprocessing:
     "gpt2-small",
     "EleutherAI/pythia-410m",
     "Qwen/Qwen2.5-0.5B-Instruct",
-    "bigscience/bloom-1b1",
     "Qwen/Qwen2.5-1.5B-Instruct",
     "meta-llama/Llama-3.2-1B-Instruct",
-    "meta-llama/Llama-3.2-3B-Instruct",
+    "gpt2",
   ]
 
   templates: [
@@ -26,25 +28,31 @@ data_preprocessing:
     "alpaca",
     "alpaca",
     "qwen",
-    "alpaca",
     "qwen",
     "llama_3",
-    "llama_3",
+    "alpaca",
   ]
 
 
 model:
-  # model_name: "meta-llama/Llama-3.2-1B-Instruct" # AROUND 50
-  # model_name: "gpt2-small" AROUND 50
-  # model_name: 'EleutherAI/pythia-410m' # WORSE THAN RANDOM
+  model_name: "meta-llama/Llama-3.2-1B-Instruct"
+  # model_name: "gpt2-small"
+  # model_name: "gpt2-xl"
+  # model_name: 'EleutherAI/pythia-410m'
   # model_name: 'EleutherAI/pythia-14m'
-  # model_name: 'bigscience/bloom-1b1' looks like 50
-  # model_name: "Qwen/Qwen2.5-3B-Instruct" AROUND 70 takes around 10h for 1 (out of 20)
-  model_name: "Qwen/Qwen2.5-1.5B-Instruct" # AROUND 70 takes around 2h
-  # model_name: "Qwen/Qwen2.5-0.5B-Instruct" #WORSE THAN RANDOM
+  # model_name: 'bigscience/bloom-1b1'
+  # model_name: "Qwen/Qwen2.5-1.5B-Instruct"
+  # model_name: "Qwen/Qwen2.5-0.5B-Instruct"
   device: "cuda"
   
-  batch_size: 16
+  batch_size: 8
   train_percent: 0.8
 
   threshold: 5e-3
+
+  tokenGraph: False
+
+  method: "mask_gradient" # "mask_gradient" or "ACDC" or "edge_attribution_patching"
+
+  tao_exps: [-2]
+  tao_bases: [5]

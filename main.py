@@ -2,16 +2,17 @@ import json
 from auto_circuit.data import load_datasets_from_json
 from auto_circuit.experiment_utils import load_tl_model
 from auto_circuit.prune_algos.ACDC import acdc_prune_scores
+from auto_circuit.prune_algos.mask_gradient import mask_gradient_prune_scores
+from auto_circuit.prune_algos.edge_attribution_patching import edge_attribution_patching_prune_scores
 from auto_circuit.types import PruneScores
 from auto_circuit.visualize import draw_seq_graph
-from auto_circuit.utils.graph_utils import patchable_model
+from auto_circuit.utils.graph_utils import patchable_model, train_mask_mode
 
 import os
 from pathlib import Path
 
 import torch
 
-from utils.dataset import create_dataset
 from config import ProjectConfig, load_yaml_config
 
 config:ProjectConfig = load_yaml_config("conf.yaml")
@@ -45,27 +46,53 @@ train_loader, test_loader = load_datasets_from_json(
     batch_size=config.model.batch_size,
     train_test_size=[train_size, test_size],
     tail_divergence=True,
+    return_seq_length=True if config.model.tokenGraph else False,
+    # pad=False,
+    prepend_bos=False,
 )
 
 model = patchable_model(
     model,
     factorized=True,
     slice_output="last_seq",
-    separate_qkv=False,
+    separate_qkv=True,
     kv_caches=(train_loader.kv_cache, test_loader.kv_cache),
     device=device,
+    seq_len=None if not config.model.tokenGraph else test_loader.seq_len,
 )
 
-attribution_scores: PruneScores = acdc_prune_scores(
-    model=model,
-    dataloader=train_loader,
-    official_edges=None,
-    tao_exps=[-5,-3,-2],
-    tao_bases=[1,5,9]
-)
+if config.model.method == "ACDC":
+    print("Using ACDC method")
+    attribution_scores: PruneScores = acdc_prune_scores(
+        model=model,
+        dataloader=train_loader,
+        official_edges=None,
+        tao_exps=config.model.tao_exps,
+        tao_bases=config.model.tao_bases,
+    )
+elif config.model.method == "mask_gradient":
+    print("Using mask gradient method")
+    attribution_scores: PruneScores = mask_gradient_prune_scores(
+        model=model,
+        dataloader=train_loader,
+        official_edges=None,
+        grad_function="logprob",
+        answer_function="avg_diff",
+        mask_val=1.0
+    )
+elif config.model.method == "edge_attribution_patching":
+    print("Using edge attribution patching method")
+    attribution_scores: PruneScores = edge_attribution_patching_prune_scores(
+        model=model,
+        dataloader=train_loader,
+        official_edges=None,
+    )
+else:
+    raise ValueError(f"Method {config.model.method} not supported. Use 'ACDC' or 'mask_gradient'.")
 
 # save to file attribution scores (PruneScores = Dict[str, t.Tensor])
-attribution_scores_path = Path(f"{config.out_dir}/{config.model.model_name}/attribution_scores.json")
+attribution_scores_path = Path(f"{config.out_dir}/{config.model.model_name}/attribution_scores_{config.exp_name}.json")
+# check if the path exists
 attribution_scores_path.parent.mkdir(parents=True, exist_ok=True)
 with open(attribution_scores_path, "w") as f:
     json.dump(
@@ -73,17 +100,15 @@ with open(attribution_scores_path, "w") as f:
         f,
         indent=4,
     )
+print(f"Attribution scores saved to {attribution_scores_path}")
 
-"""V
-# load attribution scores from file
-with open(attribution_scores_path) as f:
-    attribution_scores = json.load(f)
-    # convert to tensor
-    for k, v in attribution_scores.items():
-        attribution_scores[k] = torch.tensor(v, device=device, dtype=torch.float32)
-"""
-
-image_path = Path(f"{config.out_dir}/{config.model.model_name}/attribution_scores.png")
-fig = draw_seq_graph(model, attribution_scores, config.model.threshold, layer_spacing=True, orientation="v")
-
-fig.write_image("images/fig1.png")
+image_path = Path(f"{config.out_dir}/{config.model.model_name}/attribution_scores_{config.exp_name}.png")
+fig = draw_seq_graph(
+    model, attribution_scores, config.model.threshold, 
+    seq_labels = train_loader.seq_labels if config.model.tokenGraph else None,
+    layer_spacing=True, orientation="h", display_ipython=False, 
+)
+# Save the figure
+image_path.parent.mkdir(parents=True, exist_ok=True)
+fig.write_image(image_path, width=2000, height=1000, scale=2)
+print(f"Figure saved to {image_path}")

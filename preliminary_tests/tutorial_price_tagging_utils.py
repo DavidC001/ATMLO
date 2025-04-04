@@ -479,8 +479,8 @@ def create_price_game_acdc_dataset(
     Each item has:
       - "clean": A prompt whose "correct" label is either "Yes" or "No".
       - "corrupt": The same style of prompt but guaranteed to yield the *opposite* label.
-      - "answers": The "correct" label for the clean prompt, e.g. [" Yes"] or [" No"].
-      - "wrong_answers": The label that the corrupt prompt would produce, e.g. [" No"] or [" Yes"].
+      - "answers": The "correct" label for the clean prompt, e.g. ["Yes"] or ["No"].
+      - "wrong_answers": The label that the corrupt prompt would produce, e.g. ["No"] or ["Yes"].
 
     The final dictionary has:
       {
@@ -593,8 +593,8 @@ def create_price_game_acdc_dataset(
             # build prompt
             corrupt_prompt = build_prompt_text(lb_corrupt, ub_corrupt, amount_clean)
             # clean label => "Yes", corrupt label => "No"
-            answers = [" Yes"]
-            wrong_answers = [" No"]
+            answers = ["Yes"]
+            wrong_answers = ["No"]
 
         else:
             # "clean" => "No", so "corrupt" => "Yes"
@@ -612,8 +612,8 @@ def create_price_game_acdc_dataset(
 
             corrupt_prompt = build_prompt_text(lb_corrupt, ub_corrupt, amount_clean)
             # clean label => "No", corrupt label => "Yes"
-            answers = [" No"]
-            wrong_answers = [" Yes"]
+            answers = ["No"]
+            wrong_answers = ["Yes"]
 
         dataset["prompts"].append(
             {

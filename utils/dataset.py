@@ -1,4 +1,6 @@
 import json
+
+from tqdm import tqdm
 from auto_circuit.data import load_datasets_from_json
 
 alpaca_prompt_template = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
@@ -35,7 +37,22 @@ prompt_template = {
     "qwen": qwen_template,
 }
 
-def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama_3"):
+def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama_3", global_padding=False, tokenizer=None):
+    """
+    Create a dataset from the input json files and save it to the output json file.
+    
+    Args:
+        input_jsons: list of json files to load
+        out_json: output json file to save the dataset
+        template: template to use for the dataset
+        global_padding: if True, pad the input ids to the same length
+        tokenizer: tokenizer object, required if global_padding is True
+        
+    Returns:
+        The number of samples in the dataset
+    """
+    
+    assert tokenizer is not None or not global_padding, "Tokenizer is required if global_padding is True"
     
     out_data = {
         "seq_labels": [],
@@ -52,8 +69,27 @@ def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama
         for sample in data["prompts"]:
             sample["clean"] = prompt_template[template] % (instruction, sample["clean"])
             sample["corrupt"] = prompt_template[template] % (instruction, sample["corrupt"])
+            
         
         out_data["prompts"].extend(data["prompts"])
+        
+    
+    if global_padding:    
+        # compute the max token length
+        max_token_length = max([len(tokenizer.encode(sample["clean"], add_special_tokens=False)) for sample in out_data["prompts"]])
+        
+        print("normalizing the dataset to max token length: ", max_token_length)
+        # add the "\n" to the end of the prompt
+        for sample in tqdm(out_data["prompts"]):
+            while len(tokenizer.encode(sample["clean"], add_special_tokens=False)) < max_token_length:
+                sample["clean"] += "\n"
+            while len(tokenizer.encode(sample["corrupt"], add_special_tokens=False)) < max_token_length:
+                sample["corrupt"] += "\n"
+                
+                
+            assert len(tokenizer.encode(sample["clean"], add_special_tokens=False)) == len(tokenizer.encode(sample["corrupt"], add_special_tokens=False)), f"Clean and corrupt prompts have different lengths: {len(tokenizer.encode(sample['clean'], add_special_tokens=False))} vs {len(tokenizer.encode(sample['corrupt'], add_special_tokens=False))}"
+            assert len(tokenizer.encode(sample["clean"], add_special_tokens=False)) == max_token_length, f"Prompt length is not equal to max token length: {len(tokenizer.encode(sample['clean'], add_special_tokens=False))} vs {max_token_length}"
+    
     
     json.dump(out_data, open(out_json,"w"), indent = 1)
     # return dataset dimension

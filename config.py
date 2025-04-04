@@ -33,7 +33,9 @@ def dataclass(*args, **kwargs):
 
 @dataclass
 class DataConfig:
+    global_padding: bool = False
     dataset_dir: str = "datasets"
+    
     model_names: list = field(default_factory=lambda: ["EleutherAI/pythia-14m"])
     input_jsons: list = field(default_factory=lambda: ["datasets/testing.json"])
     templates: list = field(default_factory=lambda: ["LogicBench"])
@@ -49,6 +51,23 @@ class ModelConfig:
     batch_size: int = 8
     train_percent: float = 0.8
     threshold: float = 1e-2
+    
+    tokenGraph: bool = False
+    """
+    If True, the model will be patched so that each token is visible in the output.
+    """
+    
+    method: str = "ACDC"
+    """
+    The method to use for pruning. Options are: ACDC, mask_gradient
+    """
+    
+    tao_bases: list = field(default_factory=lambda: [1, 5, 9])
+    tao_exps: list = field(default_factory=lambda: [-5, -3, -2])
+    
+    def __post_init__(self):
+        if self.method not in ["ACDC", "mask_gradient", "edge_attribution_patching"]:
+            raise ValueError(f"Method {self.method} not supported. Use 'ACDC' or 'mask_gradient'.")
 
 # =================================================================================================
 # Project configuration
@@ -56,6 +75,7 @@ class ModelConfig:
 
 @dataclass
 class ProjectConfig:
+    exp_name: str = "default"
     out_dir : str = "results"
     seed: int = 42
     

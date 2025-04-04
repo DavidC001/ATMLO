@@ -11,11 +11,14 @@ from tqdm import tqdm
 
 class AC_data(Dataset):
     
-    def __init__(self, input_jsons, template, tokenizer):
+    def __init__(self, input_jsons, template, tokenizer, global_padding=False):
         """
         Args:
-            config (DataConfig): configuration object
+            input_jsons: list of json files to load
+            template: template to use for the dataset
             tokenizer: tokenizer object
+            global_padding: if True, pad the input ids to the same length
+            
         """
         super().__init__()
         
@@ -29,6 +32,8 @@ class AC_data(Dataset):
             input_jsons=input_jsons,
             out_json=out_path,
             template=template,
+            global_padding=global_padding,
+            tokenizer=tokenizer,
         )
         
         # load the data from the json
@@ -43,11 +48,11 @@ class AC_data(Dataset):
                 self.samples.append(clean["input_ids"])
                 self.samples.append(corrupt["input_ids"])
                 
-                correct = tokenizer.encode(sample["answers"][0], add_special_tokens=False)[0]
-                wrong = tokenizer.encode(sample["wrong_answers"][0], add_special_tokens=False)[0]
+                correct = [tokenizer.encode(answer, add_special_tokens=False)[0] for answer in sample["answers"]]
+                wrong = [tokenizer.encode(w_answer, add_special_tokens=False)[0] for w_answer in sample["wrong_answers"]]
+                
                 self.GT.append(correct)
                 self.GT_opposite.append(wrong)
-                
                 self.GT.append(wrong)
                 self.GT_opposite.append(correct)
                 
@@ -86,8 +91,8 @@ for template, model_name in zip(config.data_preprocessing.templates, config.data
     counterfactual_sample = {
         "clean": "",
         "corrupt": "",
-        "answers": ["yes"],
-        "wrong_answers": ["no"],
+        "answers": ["Yes", "yes"],
+        "wrong_answers": ["No", "no"],
     }
 
     print("loading data:")
@@ -95,6 +100,7 @@ for template, model_name in zip(config.data_preprocessing.templates, config.data
         input_jsons=config.data_preprocessing.input_jsons,
         template=template,
         tokenizer=tokenizer,
+        global_padding=config.data_preprocessing.global_padding,
     )
     total = len(data)
     correct = 0
@@ -108,8 +114,8 @@ for template, model_name in zip(config.data_preprocessing.templates, config.data
     for sample in dataset:
         out = model(sample["input_ids"])[0][-1]
         
-        correct_value = out[sample["correct"]]
-        wrong_value = out[sample["wrong"]]
+        correct_value = out[sample["correct"]].sum()
+        wrong_value = out[sample["wrong"]].sum()
         
         # check if the answer is the same
         if (correct_value > wrong_value) :
