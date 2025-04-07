@@ -24,7 +24,8 @@ device = config.model.device
 
 model = load_tl_model(config.model.model_name, device=device)
 
-path = Path(f"{config.data_preprocessing.dataset_dir}/{config.model.model_name}/dataset.json")
+# path = Path(f"{config.data_preprocessing.dataset_dir}/{config.model.model_name}/dataset.json")
+path = Path("datasets/price_game/train.json")
 # check if the dataset exists
 assert os.path.exists(path), f"Dataset not found at {path}, run benchmark.py to create it with the wanted model"
 
@@ -55,7 +56,7 @@ model = patchable_model(
     model,
     factorized=True,
     slice_output="last_seq",
-    separate_qkv=True,
+    separate_qkv=False,
     kv_caches=(train_loader.kv_cache, test_loader.kv_cache),
     device=device,
     seq_len=None if not config.model.tokenGraph else test_loader.seq_len,

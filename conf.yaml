@@ -52,7 +52,7 @@ model:
 
   tokenGraph: False
 
-  method: "mask_gradient" # "mask_gradient" or "ACDC" or "edge_attribution_patching"
+  method: "ACDC" # "mask_gradient" or "ACDC" or "edge_attribution_patching"
 
   tao_exps: [-2]
   tao_bases: [5]

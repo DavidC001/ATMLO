@@ -7,68 +7,8 @@ from config import ProjectConfig, load_yaml_config, DataConfig
 from auto_circuit.experiment_utils import load_tl_model
 import json
 from tqdm import tqdm
+from utils.dataloader import AC_data
 
-
-class AC_data(Dataset):
-    
-    def __init__(self, input_jsons, template, tokenizer, global_padding=False):
-        """
-        Args:
-            input_jsons: list of json files to load
-            template: template to use for the dataset
-            tokenizer: tokenizer object
-            global_padding: if True, pad the input ids to the same length
-            
-        """
-        super().__init__()
-        
-        self.text = []
-        self.samples = []
-        self.GT = []
-        self.GT_opposite = []
-        
-        out_path = "testing.json"
-        create_dataset(
-            input_jsons=input_jsons,
-            out_json=out_path,
-            template=template,
-            global_padding=global_padding,
-            tokenizer=tokenizer,
-        )
-        
-        # load the data from the json
-        with open(out_path) as f:
-            data = json.load(f)
-            for sample in tqdm(data["prompts"]):
-                self.text.append(sample["clean"])
-                self.text.append(sample["corrupt"])
-                
-                clean = tokenizer(sample["clean"], return_tensors="pt")
-                corrupt = tokenizer(sample["corrupt"], return_tensors="pt")
-                self.samples.append(clean["input_ids"])
-                self.samples.append(corrupt["input_ids"])
-                
-                correct = [tokenizer.encode(answer, add_special_tokens=False)[0] for answer in sample["answers"]]
-                wrong = [tokenizer.encode(w_answer, add_special_tokens=False)[0] for w_answer in sample["wrong_answers"]]
-                
-                self.GT.append(correct)
-                self.GT_opposite.append(wrong)
-                self.GT.append(wrong)
-                self.GT_opposite.append(correct)
-                
-        # remove the json file
-        os.remove(out_path)
-        
-    def __len__(self):
-        return len(self.samples)
-    
-    def __getitem__(self, index):
-        return {
-            "text": self.text[index],
-            "input_ids": self.samples[index],
-            "correct": self.GT[index],
-            "wrong": self.GT_opposite[index],
-        }
 
 # load configuration
 config : ProjectConfig = load_yaml_config("conf.yaml")                
@@ -112,7 +52,7 @@ for template, model_name in zip(config.data_preprocessing.templates, config.data
     clean_correct = False # wether the clean prompt was correctly classified
     clean_prompt = ""
     for sample in dataset:
-        out = model(sample["input_ids"])[0][-1]
+        out = model(sample["input_ids"].unqueeze(0))[0][-1]
         
         correct_value = out[sample["correct"]].sum()
         wrong_value = out[sample["wrong"]].sum()
