@@ -9,15 +9,16 @@ import json
 import os
 import glob
 import re
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoConfig
 import torch
 import traceback
 
 # --- Configuration ---
-DATA_DIR = "datasets/probing/Qwen/Qwen2.5-1.5B-Instruct/modus_tollens/"
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
-NUM_LAYERS = 24  # Adjust if needed
-NUM_HEADS = 16   # Adjust if needed
+DATA_DIR = "datasets/probing/meta-llama/Llama-3.2-1B-Instruct/modus_tollens/"
+MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
+Model_Config = AutoConfig.from_pretrained(MODEL_NAME)
+NUM_LAYERS = Model_Config.num_hidden_layers
+NUM_HEADS = Model_Config.num_attention_heads
 DEFAULT_SAMPLE_TYPE = "clean"
 
 # --- Tokenizer Setup ---
