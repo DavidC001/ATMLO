@@ -18,7 +18,7 @@ data_types = ["LogicBench(Aug)","LogicBench(Eval)/BQA"]
 
 bar = tqdm()
 
-def preprocess(model_name, tokenizer=None):
+def preprocess(model_name, tokenizer=None, format="ACDC"):
     """
     Preprocess the LogicBench dataset to create a json file with the following format:
     {
@@ -69,14 +69,20 @@ def preprocess(model_name, tokenizer=None):
                 output_json_path = f"{output_dir}/{data_type}/{logic_type}/{problem_type}"
                 os.makedirs(output_json_path, exist_ok=True)
                 output_json_path+="/data.json"
-                output_data = {
-                    "instruction": "Based on the given context, you have to respond with yes or no.",
-                    "seq_labels": [],
-                    "word_idxs": {},
-                    "prompts": []
-                }
                 
-                max_token_length = 0
+                if format == "ACDC":
+                    output_data = {
+                        "instruction": "Based on the given context, you have to respond with yes or no.",
+                        "seq_labels": [],
+                        "word_idxs": {},
+                        "prompts": []
+                    }
+                elif format == "feat-circ":
+                    output_data = []
+                    instruction = "Based on the given context, you have to respond with yes or no."
+                else:
+                    raise ValueError(f"Unknown format: {format}")
+                
                 # parse the data
                 for sample in data[data_col]:
                     context = sample["context"]
@@ -90,37 +96,57 @@ def preprocess(model_name, tokenizer=None):
                     tokenized_clean = len(tokenizer.tokenize(clean))
                     tokenized_corrupt = len(tokenizer.tokenize(corrupt))
                     
+                    clean = context + "\n" + clean
+                    corrupt = context + "\n" + corrupt
+                    
+                    if format == "feat-circ":
+                        clean = instruction + "\n" + clean
+                        corrupt = instruction + "\n" + corrupt
+                    
                     while tokenized_corrupt != tokenized_clean:
                         
                         if tokenized_corrupt < tokenized_clean:
-                            corrupt += "\n"
+                            corrupt = "\n" + corrupt
                             tokenized_corrupt = len(tokenizer.tokenize(corrupt))
                         else:
-                            clean += "\n"
+                            clean = "\n" + clean
                             tokenized_clean = len(tokenizer.tokenize(clean))
-                        
-                    clean = context + " " + clean
-                    corrupt = context + " " + corrupt
                     
                     assert tokenized_corrupt == tokenized_clean, f"the prompts do not have the same lenght clean:{tokenized_clean} corrupt:{tokenized_corrupt}\nclean: {clean}\ncorrupt: {corrupt}"
                     
-                    max_token_length = max(max_token_length, len(tokenizer.tokenize(clean)))
+                    inverse = random.randint(0, 1)
+                    if inverse == 1:
+                        clean, corrupt = corrupt, clean
                     
-                    output_data["prompts"].append({
-                        "clean": clean,
-                        "corrupt": corrupt,
-                        "answers": ["Yes", "yes"],
-                        "wrong_answers": ["No", "no"],
-                    })
+                    if format == "ACDC":    
+                        output_data["prompts"].append({
+                            "clean": clean,
+                            "corrupt": corrupt,
+                            "answers": ["Yes", "yes"] if inverse == 0 else ["No", "no"],
+                            "wrong_answers": ["No", "no"] if inverse == 0 else ["Yes", "yes"],
+                        })
+                    elif format == "feat-circ":
+                        output_data.append({
+                            "clean_prefix": clean,
+                            "patch_prefix": corrupt,
+                            "clean_answer": "Yes" if inverse == 0 else "No",
+                            "patch_answer": "No" if inverse == 0 else "Yes",
+                            "case": "yes-no" if inverse == 0 else "no-yes",
+                        })
                     
                 # output data to file
-                json.dump(output_data, open(output_json_path, "w"), indent=1)
+                if format == "ACDC":
+                    json.dump(output_data, open(output_json_path, "w"), indent=1)
+                elif format == "feat-circ":
+                    with open(output_json_path, "w") as f:
+                        for item in output_data:
+                            f.write(json.dumps(item) + "\n")
                 bar.update()
                 
 if __name__ == "__main__":
     from config import ProjectConfig, load_yaml_config
-
+    
     random.seed(42)
     
     conf:ProjectConfig = load_yaml_config("conf.yaml")
-    preprocess(conf.model.model_name)
+    preprocess("EleutherAI/pythia-70m-deduped", format="feat-circ")

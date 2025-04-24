@@ -1,3 +1,5 @@
 pyvene
 pytorch
 auto-circuit
+dash
+dash_cytoscape

@@ -36,9 +36,9 @@ class DataConfig:
     global_padding: bool = False
     dataset_dir: str = "datasets"
     
-    model_names: list = field(default_factory=lambda: ["EleutherAI/pythia-14m"])
-    input_jsons: list = field(default_factory=lambda: ["datasets/testing.json"])
-    templates: list = field(default_factory=lambda: ["LogicBench"])
+    model_names: list[str] = field(default_factory=lambda: ["EleutherAI/pythia-14m"])
+    input_jsons: dict[list[str]] = field(default_factory=lambda: {})
+    templates: list[str] = field(default_factory=lambda: ["LogicBench"])
 
 # =================================================================================================
 # Model configuration

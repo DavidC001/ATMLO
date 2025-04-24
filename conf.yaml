@@ -8,10 +8,40 @@ data_preprocessing:
   dataset_dir: "datasets"
   global_padding: False
 
-  input_jsons: [
-    "datasets/LogicBench/LogicBench(Aug)/propositional_logic/modus_tollens/data.json",
-    "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data.json",
-  ]
+  input_jsons: {
+    modus_tollens: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/modus_tollens/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data.json",
+    ],
+    bidirectional_dilemma: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/bidirectional_dilemma/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/bidirectional_dilemma/data.json",
+    ],
+    commutation: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/commutation/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/commutation/data.json",
+    ],
+    constructive_dilemma: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/constructive_dillema/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/constructive_dilemma/data.json",
+    ],
+    destructive_dilemma: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/destructive_dillema/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/destructive_dilemma/data.json",
+    ],
+    disjunctive_syllogism: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/disjunctive_syllogism/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/disjunctive_syllogism/data.json",
+    ],
+    hypothetical_syllogism: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/hypothetical_syllogism/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/hypothetical_syllogism/data.json",
+    ],
+    material_implication: [
+      "datasets/LogicBench/LogicBench(Aug)/propositional_logic/material_implication/data.json",
+      "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/material_implication/data.json",
+    ],
+  }
 
   model_names: [
     "EleutherAI/pythia-14m",
