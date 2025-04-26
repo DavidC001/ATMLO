@@ -8,23 +8,20 @@ alpaca_prompt_template = f"""Below is an instruction that describes a task, pair
 ### Instruction:
 %s
 
-### Input:
-%s
+### Input:%s
 
 ### Response:
 """
 
 llama_3prompt_template = f"""<|start_header_id|>system<|end_header_id|>
 
-%s<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-%s<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+%s <|eot_id|><|start_header_id|>user<|end_header_id|>
+%s <|eot_id|><|start_header_id|>assistant<|end_header_id|>
 """
 
 qwen_template = f"""<|im_start|>system
 %s<|im_end|>
-<|im_start|>user
-%s<|im_end|>
+<|im_start|>user%s<|im_end|>
 <|im_start|>assistant
 """
 
@@ -69,6 +66,10 @@ def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama
         for sample in data["prompts"]:
             sample["clean"] = prompt_template[template] % (instruction, sample["clean"])
             sample["corrupt"] = prompt_template[template] % (instruction, sample["corrupt"])
+        
+            # if tokenizer is not None verify that the clean and corrupt prompts are the same length
+            if tokenizer is not None:
+                assert len(tokenizer.encode(sample["clean"], add_special_tokens=False)) == len(tokenizer.encode(sample["corrupt"], add_special_tokens=False)), f"Clean and corrupt prompts have different lengths: {len(tokenizer.encode(sample['clean'], add_special_tokens=False))} vs {len(tokenizer.encode(sample['corrupt'], add_special_tokens=False))}"
             
         
         out_data["prompts"].extend(data["prompts"])

@@ -1,5 +1,6 @@
 from dataclasses import dataclass as og_dataclass
 from dataclasses import is_dataclass, field
+import os
 import yaml
 import torch
 
@@ -45,12 +46,19 @@ class DataConfig:
 # =================================================================================================
 
 @dataclass
-class ModelConfig:
+class CircuitDiscConf:
     model_name: str = "meta-llama/Llama-3.2-3B-Instruct"
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    
     batch_size: int = 8
     train_percent: float = 0.8
+    
     threshold: float = 1e-2
+    
+    dataset: str = "modus_tollens"
+    """
+    The dataset to use for training from the ones available for the selected model.
+    """
     
     tokenGraph: bool = False
     """
@@ -68,6 +76,35 @@ class ModelConfig:
     def __post_init__(self):
         if self.method not in ["ACDC", "mask_gradient", "edge_attribution_patching"]:
             raise ValueError(f"Method {self.method} not supported. Use 'ACDC' or 'mask_gradient'.")
+        
+# ==================================================================================================
+# LogicBench Dataset Conversion   
+# ==================================================================================================
+
+@dataclass
+class DatasetConversion:
+    """
+    Configuration for the dataset conversion.
+    """
+    
+    model: str = "meta-llama/Llama-3.1-70B-Instruct"
+    
+    dataset_files: list[str] = field(default_factory=lambda: [])
+    output_files: list[str] = field(default_factory=lambda: [])
+    
+    format: str = "default"
+    """
+    The format of the dataset. Options are: default, modus_tollens.
+    """
+    
+    def __post_init__(self):
+        if self.format not in ["default", "modus_tollens"]:
+            raise ValueError(f"Format {self.format} not supported. Use 'default' or 'modus_tollens'.")
+        
+        # check if input files exist
+        for file in self.dataset_files:
+            assert os.path.exists(file), f"File {file} does not exist."
+
 
 # =================================================================================================
 # Project configuration
@@ -79,8 +116,10 @@ class ProjectConfig:
     out_dir : str = "results"
     seed: int = 42
     
-    model: ModelConfig = field(default_factory=ModelConfig)
+    circuit_discovery: CircuitDiscConf = field(default_factory=CircuitDiscConf)
     data_preprocessing: DataConfig = field(default_factory=DataConfig)
+    
+    convert_dataset: DatasetConversion = field(default_factory=DatasetConversion)
     
     
 def load_yaml_config(path) -> ProjectConfig:

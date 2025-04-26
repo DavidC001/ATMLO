@@ -20,7 +20,7 @@ bar = tqdm()
 
 def preprocess(model_name, tokenizer=None, format="ACDC"):
     """
-    Preprocess the LogicBench dataset to create a json file with the following format:
+    For ACDC preprocess the LogicBench dataset to create a json file with the following format:
     {
         "instruction": "Based on the given context, you have to respond with yes or no.",
         "seq_labels": [],
@@ -35,9 +35,20 @@ def preprocess(model_name, tokenizer=None, format="ACDC"):
         ]
     }
     
+    For feat-circ preprocess the LogicBench dataset to create a json file with the following format:
+    {
+        "clean_prefix": "the clean prompt",
+        "patch_prefix": "the corrupt prompt",
+        "clean_answer": "Yes",
+        "patch_answer": "No",
+        "case": "yes-no"
+    }
+    [all the others...]
+    
     Args:
         model_name (str): The name of the model to use for tokenization.
         tokenizer (AutoTokenizer): The tokenizer to use for tokenization. If None, the tokenizer will be loaded from the model_name.
+        format (str): The format to use for the output data. Can be "ACDC" or "feat-circ".
         
     Returns:
         None
@@ -96,12 +107,12 @@ def preprocess(model_name, tokenizer=None, format="ACDC"):
                     tokenized_clean = len(tokenizer.tokenize(clean))
                     tokenized_corrupt = len(tokenizer.tokenize(corrupt))
                     
-                    clean = context + "\n" + clean
-                    corrupt = context + "\n" + corrupt
+                    clean = "\n" + context + "\n" + clean
+                    corrupt = "\n" + context + "\n" + corrupt
                     
                     if format == "feat-circ":
-                        clean = instruction + "\n" + clean
-                        corrupt = instruction + "\n" + corrupt
+                        clean = instruction + clean
+                        corrupt = instruction + corrupt
                     
                     while tokenized_corrupt != tokenized_clean:
                         
