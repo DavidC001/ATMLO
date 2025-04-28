@@ -97,7 +97,7 @@ def convert_dataset(model, tokenizer, problem_type, json_path, output_json_path)
         
 
 if __name__ == "__main__":
-    conf: ProjectConfig = load_yaml_config("config.yaml")
+    conf: ProjectConfig = load_yaml_config("conf.yaml")
 
     model_name = conf.convert_dataset.model
     
