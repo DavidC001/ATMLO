@@ -104,7 +104,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
-        device_map=device,
+        device_map="auto",
     )
     
     model.eval()
