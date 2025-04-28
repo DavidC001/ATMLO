@@ -104,17 +104,16 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",
-        device_map="auto"
+        device_map=device,
     )
     
     model.eval()
-    model.to(device)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     
     for i in tqdm(range(len(conf.convert_dataset.dataset_files))):
         json_path = conf.convert_dataset.dataset_files[i]
         output_json_path = conf.convert_dataset.output_files[i]
-        problem_type = conf.convert_dataset.problem_types[i]
+        problem_type = conf.convert_dataset.format[i]
         
         convert_dataset(
             model,
