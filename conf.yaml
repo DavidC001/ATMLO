@@ -103,8 +103,8 @@ convert_dataset:
   model: "meta-llama/Llama-3.1-70B-Instruct"
 
   dataset_files: [
-    "datasets/LogicBench/LogicBench(Aug)/propositional_logic/hypothetical_syllogism/data.json",
-    "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/hypothetical_syllogism/data.json",
+    "LogicBench/data/LogicBench(Aug)/propositional_logic/hypothetical_syllogism/data.json",
+    "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/hypothetical_syllogism/data.json",
   ]
   output_files: [
     "datasets/converted/modus_tollens/aug.json",

@@ -39,6 +39,9 @@ class DataConfig:
     
     model_names: list[str] = field(default_factory=lambda: ["EleutherAI/pythia-14m"])
     input_jsons: dict[list[str]] = field(default_factory=lambda: {})
+    """
+    Note: datasets are converted from Logicbench/data folder to the "datasets/LogicBench" folder, so you should use the path "datasets/LogicBench" as the input_jsons base folder.
+    """
     templates: list[str] = field(default_factory=lambda: ["LogicBench"])
 
 # =================================================================================================
