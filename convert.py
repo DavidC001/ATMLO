@@ -114,11 +114,12 @@ if __name__ == "__main__":
     for i in tqdm(range(len(conf.convert_dataset.dataset_files))):
         json_path = conf.convert_dataset.dataset_files[i]
         output_json_path = conf.convert_dataset.output_files[i]
+        problem_type = conf.convert_dataset.problem_types[i]
         
         convert_dataset(
             model,
             tokenizer,
-            conf.convert_dataset.format,
+            problem_type,
             json_path,
             output_json_path
         )

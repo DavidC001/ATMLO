@@ -92,14 +92,16 @@ class DatasetConversion:
     dataset_files: list[str] = field(default_factory=lambda: [])
     output_files: list[str] = field(default_factory=lambda: [])
     
-    format: str = "default"
+    format: list[str] = field(default_factory=lambda: ["default"])
     """
-    The format of the dataset. Options are: default, modus_tollens.
+    The format of the datasets. Options are: default, modus_tollens.
     """
     
     def __post_init__(self):
-        if self.format not in ["default", "modus_tollens"]:
-            raise ValueError(f"Format {self.format} not supported. Use 'default' or 'modus_tollens'.")
+        
+        assert len(self.dataset_files) == len(self.output_files), "Number of input and output files must be the same."
+        assert len(self.dataset_files) == len(self.format), "Number of input files and formats must be the same."
+        assert any([f in ["default", "modus_tollens"] for f in self.format]), "Format must be one of: default, modus_tollens."
         
         # check if input files exist
         for file in self.dataset_files:
