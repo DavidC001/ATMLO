@@ -57,21 +57,35 @@ def convert_dataset(model, tokenizer, problem_type, json_path, output_json_path)
         )
         
         model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
-        generated_ids = model.generate(
-            **model_inputs,
-            max_new_tokens=512
-        )
-        generated_ids = [
-            output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
-        ]
         
-        response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        success = False
+        do_sample = False
         
-        response = response.split("Assistant:")[-1].strip()
-        print(f"Assistant: {response}")
-        
-        new_clean, new_corrupt = response.split("\n")
-        
+        while not success:
+            generated_ids = model.generate(
+                **model_inputs,
+                max_new_tokens=512,
+                do_sample=do_sample,
+                temperature=0.2,
+            )
+            generated_ids = [
+                output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+            ]
+            
+            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            
+            response = response.split("Assistant:")[-1].strip()
+            print(f"Assistant: {response}")
+            
+            prompts = response.split("\n")
+            if len(prompts) == 2:
+                new_clean = prompts[0].strip()
+                new_corrupt = prompts[1].strip()
+                success = True
+            else:
+                do_sample = True
+                print("Failed to generate two prompts. Retrying...")
+            
         sample["qa_pairs"][0]["question"] = new_clean
         sample["qa_pairs"][1]["question"] = new_corrupt
 
