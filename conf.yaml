@@ -1,45 +1,45 @@
-exp_name: "ACDC"
+exp_name: "ACDC_converted"
 
 seed: 42
 
 out_dir: "results"
 
-data_preprocessing:
+benchmark:
   dataset_dir: "datasets"
   global_padding: False
 
   input_jsons: {
     # modus_tollens: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/modus_tollens/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data.json",
+    #   "LogicBench/data/LogicBench(Aug)/propositional_logic/modus_tollens/data_instances.json",
+    #   "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data_instances.json",
     # ],
     # bidirectional_dilemma: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/bidirectional_dilemma/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/bidirectional_dilemma/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/bidirectional_dilemma/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/bidirectional_dilemma/data_instances.json",
     # ],
     # commutation: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/commutation/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/commutation/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/commutation/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/commutation/data_instances.json",
     # ],
     # constructive_dilemma: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/constructive_dillema/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/constructive_dilemma/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/constructive_dillema/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/constructive_dilemma/data_instances.json",
     # ],
     # destructive_dilemma: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/destructive_dillema/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/destructive_dilemma/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/destructive_dillema/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/destructive_dilemma/data_instances.json",
     # ],
     # disjunctive_syllogism: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/disjunctive_syllogism/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/disjunctive_syllogism/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/disjunctive_syllogism/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/disjunctive_syllogism/data_instances.json",
     # ],
     # hypothetical_syllogism: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/hypothetical_syllogism/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/hypothetical_syllogism/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/hypothetical_syllogism/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/hypothetical_syllogism/data_instances.json",
     # ],
     # material_implication: [
-    #   "datasets/LogicBench/LogicBench(Aug)/propositional_logic/material_implication/data.json",
-    #   "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/material_implication/data.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/material_implication/data_instances.json",
+    #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/material_implication/data_instances.json",
     # ],
     converted_modus_tollens: [
       "datasets/converted/modus_tollens/aug.json",
@@ -48,23 +48,23 @@ data_preprocessing:
   }
 
   model_names: [
-    "EleutherAI/pythia-14m",
-    "gpt2-small",
-    "EleutherAI/pythia-410m",
-    "Qwen/Qwen2.5-0.5B-Instruct",
-    "Qwen/Qwen2.5-1.5B-Instruct",
-    "meta-llama/Llama-3.2-1B-Instruct",
-    "gpt2",
+    # "EleutherAI/pythia-14m",
+    # "gpt2-small",
+    # "EleutherAI/pythia-410m",
+    # "Qwen/Qwen2.5-0.5B-Instruct",
+    # "Qwen/Qwen2.5-1.5B-Instruct",
+    # "meta-llama/Llama-3.2-1B-Instruct",
+    # "gpt2",
   ]
 
   templates: [
-    "alpaca",
-    "alpaca",
-    "alpaca",
+    # "alpaca",
+    # "alpaca",
+    # "alpaca",
     "qwen",
     "qwen",
-    "llama_3",
-    "alpaca",
+    # "llama_3",
+    # "alpaca",
   ]
 
 
@@ -74,14 +74,13 @@ circuit_discovery:
   # model_name: "gpt2-xl"
   # model_name: 'EleutherAI/pythia-410m'
   # model_name: 'EleutherAI/pythia-14m'
-  # model_name: 'bigscience/bloom-1b1'
   # model_name: "Qwen/Qwen2.5-1.5B-Instruct"
   model_name: "Qwen/Qwen2.5-0.5B-Instruct"
   device: "cuda"
   
-  dataset: "hypothetical_syllogism"
+  dataset: "converted_modus_tollens"
 
-  batch_size: 1
+  batch_size: 8
   train_percent: 0.8
 
   threshold: 5e-3
@@ -103,8 +102,8 @@ convert_dataset:
   model: "meta-llama/Llama-3.1-70B-Instruct"
 
   dataset_files: [
-    "LogicBench/data/LogicBench(Aug)/propositional_logic/hypothetical_syllogism/data.json",
-    "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/hypothetical_syllogism/data.json",
+    "LogicBench/data/LogicBench(Aug)/propositional_logic/modus_tollens/data_instances.json",
+    "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data_instances.json",
   ]
   output_files: [
     "datasets/converted/modus_tollens/aug.json",

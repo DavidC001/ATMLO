@@ -24,7 +24,7 @@ device = config.circuit_discovery.device
 
 model = load_tl_model(config.circuit_discovery.model_name, device=device)
 
-path = Path(f"{config.data_preprocessing.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}/dataset.json")
+path = Path(f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}/dataset.json")
 # check if the dataset exists
 assert os.path.exists(path), f"Dataset not found at {path}, run benchmark.py to create it with the wanted model"
 

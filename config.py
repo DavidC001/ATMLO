@@ -33,7 +33,7 @@ def dataclass(*args, **kwargs):
 # =================================================================================================
 
 @dataclass
-class DataConfig:
+class BenchConfig:
     global_padding: bool = False
     dataset_dir: str = "datasets"
     
@@ -122,7 +122,7 @@ class ProjectConfig:
     seed: int = 42
     
     circuit_discovery: CircuitDiscConf = field(default_factory=CircuitDiscConf)
-    data_preprocessing: DataConfig = field(default_factory=DataConfig)
+    benchmark: BenchConfig = field(default_factory=BenchConfig)
     
     convert_dataset: DatasetConversion = field(default_factory=DatasetConversion)
     

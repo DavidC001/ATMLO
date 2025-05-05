@@ -3,8 +3,8 @@ import os
 import torch
 from torch.utils.data import Dataset
 from utils.dataset import create_dataset
-from utils.preprocess import preprocess
-from config import ProjectConfig, load_yaml_config, DataConfig
+from utils.preprocess import preprocess_LogicBench
+from config import ProjectConfig, load_yaml_config, BenchConfig
 from auto_circuit.experiment_utils import load_tl_model
 import json
 from tqdm import tqdm
@@ -17,7 +17,7 @@ config : ProjectConfig = load_yaml_config("conf.yaml")
 accuracies = {}
 retained_dataset_size = {}
 
-for template, model_name in zip(config.data_preprocessing.templates, config.data_preprocessing.model_names):
+for template, model_name in zip(config.benchmark.templates, config.benchmark.model_names):
     # load hooked transformers model
     model = load_tl_model(model_name, device="cuda")
     tokenizer = model.tokenizer
@@ -26,8 +26,6 @@ for template, model_name in zip(config.data_preprocessing.templates, config.data
         "word_idxs": {},
         "prompts": []
     }
-    
-    preprocess(model_name, tokenizer=tokenizer)
 
     counterfactual_sample = {
         "clean": "",
@@ -39,14 +37,19 @@ for template, model_name in zip(config.data_preprocessing.templates, config.data
     accuracies[model_name] = {}
     retained_dataset_size[model_name] = {}
     
-    for key in config.data_preprocessing.input_jsons:
+    for key in config.benchmark.input_jsons:
+        
+        json_files = []
+        for i in range(len(config.benchmark.input_jsons[key])):
+            preprocess_LogicBench(model_name, tokenizer=tokenizer, file=config.benchmark.input_jsons[key][i], out=f"datasets/bench/{i}.json")
+            json_files.append(f"datasets/bench/{i}.json")
+        
         print("loading data:")
-        json_files = config.data_preprocessing.input_jsons[key]
         data = AC_data(
             input_jsons=json_files,
             template=template,
             tokenizer=tokenizer,
-            global_padding=config.data_preprocessing.global_padding,
+            global_padding=config.benchmark.global_padding,
         )
         total = len(data)
         correct = 0

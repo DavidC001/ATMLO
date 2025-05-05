@@ -31,9 +31,9 @@ def convert_dataset(model, tokenizer, problem_type, json_path, output_json_path)
     Convert the LogicBench dataset to a format that can be used for circuit discovery more easily by having the same number of tokens in the two prompts.
     """
     
-    print(f"=========================\nPROCESSING {json_path}\n=========================")
+    tqdm.write(f"=========================\nPROCESSING {json_path}\n=========================")
     data = json.load(open(json_path))
-    os.makedirs(output_json_path, exist_ok=True)
+    os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
 
     data_col = "data_samples"
     data_col = data_col if (data_col in data.keys()) else "samples"
@@ -75,7 +75,7 @@ def convert_dataset(model, tokenizer, problem_type, json_path, output_json_path)
             response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
             
             response = response.split("Assistant:")[-1].strip()
-            print(f"Assistant: {response}")
+            tqdm.write(f"Assistant: {response}")
             
             prompts = response.split("\n")
             if len(prompts) == 2:
@@ -84,7 +84,7 @@ def convert_dataset(model, tokenizer, problem_type, json_path, output_json_path)
                 success = True
             else:
                 do_sample = True
-                print("Failed to generate two prompts. Retrying...")
+                tqdm.write("Failed to generate two prompts. Retrying...")
             
         sample["qa_pairs"][0]["question"] = new_clean
         sample["qa_pairs"][1]["question"] = new_corrupt
