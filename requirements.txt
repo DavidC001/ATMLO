@@ -3,3 +3,5 @@ pytorch
 auto-circuit
 dash
 dash_cytoscape
+captum
+mplcursors

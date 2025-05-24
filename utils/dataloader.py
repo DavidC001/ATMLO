@@ -2,7 +2,7 @@ from torch.utils.data import Dataset
 import torch
 import os
 import json
-from utils.dataset import create_dataset
+from utils.data.logic_dataset import create_dataset
 from tqdm import tqdm
 
 class AC_data(Dataset):
@@ -24,7 +24,7 @@ class AC_data(Dataset):
         self.GT = []
         self.GT_opposite = []
         
-        out_path = "testing.json"
+        out_path = "temp.json"
         create_dataset(
             input_jsons=input_jsons,
             out_json=out_path,

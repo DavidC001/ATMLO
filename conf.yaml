@@ -9,10 +9,10 @@ benchmark:
   global_padding: False
 
   input_jsons: {
-    # modus_tollens: [
-    #   "LogicBench/data/LogicBench(Aug)/propositional_logic/modus_tollens/data_instances.json",
-    #   "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data_instances.json",
-    # ],
+    modus_tollens: [
+      "LogicBench/data/LogicBench(Aug)/propositional_logic/modus_tollens/data_instances.json",
+      "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data_instances.json",
+    ],
     # bidirectional_dilemma: [
     #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/bidirectional_dilemma/data_instances.json",
     #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/bidirectional_dilemma/data_instances.json",
@@ -41,10 +41,10 @@ benchmark:
     #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/material_implication/data_instances.json",
     #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/material_implication/data_instances.json",
     # ],
-    converted_modus_tollens: [
-      "datasets/converted/modus_tollens/aug.json",
-      "datasets/converted/modus_tollens/eval.json",
-    ],
+    # converted_modus_tollens: [
+    #   "datasets/converted/modus_tollens/aug.json",
+    #   "datasets/converted/modus_tollens/eval.json",
+    # ],
   }
 
   model_names: [
@@ -52,7 +52,7 @@ benchmark:
     # "gpt2-small",
     # "EleutherAI/pythia-410m",
     # "Qwen/Qwen2.5-0.5B-Instruct",
-    # "Qwen/Qwen2.5-1.5B-Instruct",
+    "Qwen/Qwen2.5-1.5B-Instruct",
     # "meta-llama/Llama-3.2-1B-Instruct",
     # "gpt2",
   ]
@@ -62,7 +62,7 @@ benchmark:
     # "alpaca",
     # "alpaca",
     "qwen",
-    "qwen",
+    # "qwen",s
     # "llama_3",
     # "alpaca",
   ]

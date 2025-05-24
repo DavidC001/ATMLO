@@ -2,8 +2,8 @@ from copy import deepcopy
 import os
 import torch
 from torch.utils.data import Dataset
-from utils.dataset import create_dataset
-from utils.preprocess import preprocess_LogicBench
+from utils.data.logic_dataset import create_dataset
+from utils.preprocess.preprocess import preprocess_LogicBench
 from config import ProjectConfig, load_yaml_config, BenchConfig
 from auto_circuit.experiment_utils import load_tl_model
 import json
@@ -16,6 +16,9 @@ config : ProjectConfig = load_yaml_config("conf.yaml")
 
 accuracies = {}
 retained_dataset_size = {}
+
+temp_base_dir = config.benchmark.dataset_dir + "/bench/"
+os.makedirs(temp_base_dir, exist_ok=True)
 
 for template, model_name in zip(config.benchmark.templates, config.benchmark.model_names):
     # load hooked transformers model
@@ -42,7 +45,7 @@ for template, model_name in zip(config.benchmark.templates, config.benchmark.mod
         json_files = []
         for i in range(len(config.benchmark.input_jsons[key])):
             preprocess_LogicBench(model_name, tokenizer=tokenizer, file=config.benchmark.input_jsons[key][i], out=f"datasets/bench/{i}.json")
-            json_files.append(f"datasets/bench/{i}.json")
+            json_files.append(f"{temp_base_dir}/{i}.json")
         
         print("loading data:")
         data = AC_data(
@@ -111,6 +114,9 @@ for template, model_name in zip(config.benchmark.templates, config.benchmark.mod
     del model
     del tokenizer
     torch.cuda.empty_cache()
+
+# delete temp directory
+os.rmdir(temp_base_dir)
 
 print("All done")
 print("========================================")
