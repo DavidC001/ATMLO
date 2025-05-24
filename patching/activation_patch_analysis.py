@@ -70,7 +70,7 @@ def main():
     
     results = {"z": z_patches.cpu().numpy(), "mlp_out": mlp_patches.cpu().numpy()}
 
-    results_out = {k: v.numpy().tolist() for k, v in results.items()}
+    results_out = {k: v.tolist() for k, v in results.items()}
 
     # add tokens list
     results_out["tokens"] = {
