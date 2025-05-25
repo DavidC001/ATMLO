@@ -44,19 +44,52 @@ def load_prompts(path):
             raise RuntimeError(f"Unexpected prompt format in dataset {path}")
     return cleans, corrupts
 
-def patching_metric(logits):
-    # metric: probability mass on answer tokens
-    probs = logits.softmax(dim=-1)[0, -1]
-    score = probs[pos_answer_token_ids].sum() - probs[neg_answer_token_ids].sum()
-    return score
+def get_patching_metric(clean_probs):
+    """
+    Creates a patching metric that measures how activations shift the model's Yes/No decision.
+    
+    Returns:
+        - Positive values: Patching moves the answer toward "Yes" 
+        - Negative values: Patching moves the answer toward "No"
+        - Zero: No change in the Yes/No probability distribution
+    """
+    # get the patching metric measuring the difference in probability mass on answer tokens from clean
+    clean_pos_prob = clean_probs[0:len(pos_answer_token_ids)].sum()
+    clean_neg_prob = clean_probs[len(pos_answer_token_ids):].sum()
+    clean_total_answer_prob = clean_pos_prob + clean_neg_prob
+    
+    # Compute baseline clean score: positive when clean favors "Yes", negative when it favors "No"
+    if clean_total_answer_prob > 0:
+        clean_score = (clean_pos_prob - clean_neg_prob) / clean_total_answer_prob
+    else:
+        clean_score = 0.0
+    
+    def patching_metric(logits):
+        probs = torch.softmax(logits[0,-1, pos_answer_token_ids + neg_answer_token_ids], dim=-1)
+        
+        pos_prob = probs[0:len(pos_answer_token_ids)].sum()
+        neg_prob = probs[len(pos_answer_token_ids):].sum()
+        # Total probability mass on answer tokens
+        total_answer_prob = pos_prob + neg_prob
+        
+        # Compute patched score
+        if total_answer_prob > 0:
+            patched_score = (pos_prob - neg_prob) / total_answer_prob
+        else:
+            patched_score = 0.0
+        
+        # Return the difference: positive when patching moves toward "Yes", negative when toward "No"
+        return patched_score - clean_score
+        
+    return patching_metric
 
-def get_activation_patching_results(model, clean_tokens, corrupt_tokens, clean_cache):
+def get_activation_patching_results(model, corrupt_tokens, clean_cache, clean_probs):
     print("Patching attention outputs (z) layer-wise score")
-    z_patches_all_pos = get_act_patch_attn_head_out_all_pos(model, corrupt_tokens, clean_cache, patching_metric)
+    z_patches_all_pos = get_act_patch_attn_head_out_all_pos(model, corrupt_tokens, clean_cache, get_patching_metric(clean_probs))
     # Average over positions to get only layer-head scores
     z_patches = z_patches_all_pos # the output does not have a position dimension
     print("Patching MLP outputs (mlp_out) layer-wise score")
-    mlp_patches_all_pos = get_act_patch_mlp_out(model, corrupt_tokens, clean_cache, patching_metric)
+    mlp_patches_all_pos = get_act_patch_mlp_out(model, corrupt_tokens, clean_cache, get_patching_metric(clean_probs))
     # Average over positions to get layer scores
     mlp_patches = mlp_patches_all_pos.mean(dim=1)  # assuming dimension 1 is position
     return z_patches, mlp_patches
@@ -84,8 +117,10 @@ def main(num_runs=5, max_duration_secs=None):
         clean_tokens = tokenizer(clean_prompt, return_tensors="pt", padding=True, truncation=True).to(device).input_ids
         corrupt_tokens = tokenizer(corrupt_prompt, return_tensors="pt", padding=True, truncation=True).to(device).input_ids
         
-        _, clean_cache = model.run_with_cache(clean_tokens)
-        z_patches, mlp_patches = get_activation_patching_results(model, clean_tokens, corrupt_tokens, clean_cache)
+        out, clean_cache = model.run_with_cache(clean_tokens)
+        out_logits = out[0, -1, :]  # Get the logits for the last token
+        out_probs = torch.softmax(out_logits[neg_answer_token_ids+pos_answer_token_ids], dim=-1)
+        z_patches, mlp_patches = get_activation_patching_results(model, corrupt_tokens, clean_cache, out_probs)
         results_list.append({"z": z_patches.cpu().numpy(), "mlp_out": mlp_patches.cpu().numpy()})
         runs_done += 1
 
