@@ -102,7 +102,6 @@ def main():
         base_dataset_path="datasets\probing\meta-llama\Llama-3.2-1B-Instruct\price_game",
         layers=layers,
         train_test_split=0.8,
-        train=True,
         batch_size=32
     )
     

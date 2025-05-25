@@ -91,7 +91,7 @@ def collate_fn(batch):
         "wrong": [item["wrong"] for item in batch],
     }
     
-def get_dataloader(input_jsons, template, tokenizer, batch_size=32, global_padding=False):
+def get_dataloader(input_jsons, template, tokenizer, batch_size=32, global_padding=False, split=False):
     """
     Returns a DataLoader for the given dataset.
     
@@ -101,11 +101,21 @@ def get_dataloader(input_jsons, template, tokenizer, batch_size=32, global_paddi
         tokenizer: tokenizer object
         batch_size: batch size for the DataLoader
         global_padding: if True, pad the input ids to the same length
+        split: if True, split the dataset into train and test sets
         
     Returns:
-        DataLoader object
+        DataLoader object | tuple of DataLoader objects (train, test) if split is True
     """
     dataset = AC_data(input_jsons, template, tokenizer, global_padding)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, collate_fn=collate_fn)
     
-    return dataloader
+    # If split is True, we can split the dataset into train and test sets
+    if split:
+        train_size = int(0.8 * len(dataset))
+        test_size = len(dataset) - train_size
+        train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, collate_fn=collate_fn)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, collate_fn=collate_fn)
+        return train_loader, test_loader
+    else:
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, collate_fn=collate_fn)
+        return dataloader

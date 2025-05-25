@@ -61,12 +61,13 @@ def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama
         # convert the datasets of only phrases with the correct system promt
         data = json.load(open(json_path))
         
-        instruction = data["instruction"]
+        instruction = data.get("instruction", "Please answer the question based on the given context.")
         
         for sample in data["prompts"]:
-            sample["clean"] = prompt_template[template] % (instruction, sample["clean"])
-            sample["corrupt"] = prompt_template[template] % (instruction, sample["corrupt"])
-        
+            if template is not None:
+                sample["clean"] = prompt_template[template] % (instruction, sample["clean"])
+                sample["corrupt"] = prompt_template[template] % (instruction, sample["corrupt"])
+                
             # if tokenizer is not None verify that the clean and corrupt prompts are the same length
             if tokenizer is not None:
                 assert len(tokenizer.encode(sample["clean"], add_special_tokens=False)) == len(tokenizer.encode(sample["corrupt"], add_special_tokens=False)), f"Clean and corrupt prompts have different lengths: {len(tokenizer.encode(sample['clean'], add_special_tokens=False))} vs {len(tokenizer.encode(sample['corrupt'], add_special_tokens=False))}"

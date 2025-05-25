@@ -79,13 +79,13 @@ class Probe_data(Dataset):
 
 def get_dataloader(base_dataset_path="datasets\probing\Qwen\Qwen2.5-1.5B-Instruct\modus_tollens",
                    layers=["attention_layer0_out_ln", "MLP_layer4_aften"],
-                   train_test_split=0.8, train=True,
+                   train_test_split=0.8,
                    batch_size=32):
     """
     Get the dataloader for the dataset
     """
-    train_dataset = Probe_data(base_dataset_path, layers, train_test_split, train)
-    test_dataset = Probe_data(base_dataset_path, layers, train_test_split, not train)
+    train_dataset = Probe_data(base_dataset_path, layers, train_test_split, True)
+    test_dataset = Probe_data(base_dataset_path, layers, train_test_split, False)
     
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
