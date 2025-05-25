@@ -185,7 +185,7 @@ def preprocess_LogicBench(model_name, file, out, tokenizer=None, format="ACDC"):
     Args:
         model_name (str): The name of the model to use for tokenization.
         file (str): The name of the file to use as input.
-        out (str): The name of the output file.S
+        out (str): The name of the output file.
         tokenizer (AutoTokenizer): The tokenizer to use for tokenization. If None, the tokenizer will be loaded from the model_name.
         format (str): The format to use for the output data. Can be "ACDC" or "feat-circ".
         
