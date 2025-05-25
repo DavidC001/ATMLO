@@ -18,11 +18,15 @@ def build_circuit_graph(results, threshold=0.0):
 
     # Add attention head nodes
     for layer_idx, layer_heads in enumerate(z_scores):
+        # if list is a list of lists, take max for each head
+        if isinstance(layer_heads, list) and all(isinstance(h, list) for h in layer_heads):
+            # trasnpose to get heads as outer list
+            num_tokens = len(layer_heads)
+            num_heads = len(layer_heads[0])
+            layer_heads = [[layer_heads[j][i] for i in range(len(num_heads))] for j in range(len(num_tokens))]
+            layer_heads = [max(head_scores) for head_scores in layer_heads]
+            
         for head_idx, score in enumerate(layer_heads):
-            if isinstance(score, list):
-                score = max(score) if score else 0.0
-            else:
-                score = score
             # Filter by threshold
             if score >= threshold:
                 name = f"Attn_L{layer_idx}H{head_idx}"

@@ -2,7 +2,11 @@ import json
 import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+import matplotlib.patches as patches
+from matplotlib.widgets import Slider, Button
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.patheffects as path_effects
 
 def load_patch_results(path):
     """Load JSON patching results from disk."""
@@ -22,10 +26,10 @@ def build_circuit_graph(results, threshold=0.0):
     corrupt_tokens = tokens.get('corrupt', [])
 
     # Attention head nodes: (layer, head, pos)
-    for layer_idx, layer_heads in enumerate(z_scores):
-        for head_idx, head_scores in enumerate(layer_heads):
-            for pos, score in enumerate(head_scores):
-                if score >= threshold:
+    for layer_idx, pos_scores in enumerate(z_scores):
+        for pos, head_scores in enumerate(pos_scores):
+            for head_idx, score in enumerate(head_scores):
+                if score <= threshold:
                     clean_tok = clean_tokens[pos] if pos < len(clean_tokens) else ""
                     corrupt_tok = corrupt_tokens[pos] if pos < len(corrupt_tokens) else ""
                     name = f"Attn_L{layer_idx}H{head_idx}_P{pos}"
@@ -39,11 +43,12 @@ def build_circuit_graph(results, threshold=0.0):
                         pos=pos,
                         label=label
                     )
+                
 
     # MLP nodes: (layer, pos)
     for layer_idx, layer_scores in enumerate(mlp_scores):
         for pos, score in enumerate(layer_scores):
-            if score >= threshold:
+            if score <= threshold:
                 clean_tok = clean_tokens[pos] if pos < len(clean_tokens) else ""
                 corrupt_tok = corrupt_tokens[pos] if pos < len(corrupt_tokens) else ""
                 name = f"MLP_L{layer_idx}_P{pos}"
@@ -58,7 +63,7 @@ def build_circuit_graph(results, threshold=0.0):
                 )
 
     # Edges: Attn->MLP (same layer, same pos), MLP->Attn (next layer, same pos)
-    n_layers = max(len(z_scores), len(mlp_scores))
+    n_layers = max(len(z_scores[0]), len(mlp_scores))
     n_pos = len(clean_tokens)
     for L in range(n_layers):
         for pos in range(n_pos):
@@ -76,6 +81,7 @@ def build_circuit_graph(results, threshold=0.0):
                         nxt_attn = f"Attn_L{nxt}H{head_idx}_P{pos}"
                         if nxt_attn in G:
                             G.add_edge(mlp_node, nxt_attn)
+                            
     return G
 
 
@@ -115,12 +121,12 @@ def visualize_interactive(results):
     """Launch an interactive plot with a threshold slider."""
     fig, ax = plt.subplots(figsize=(12, 8))
     plt.subplots_adjust(bottom=0.2)
-    init_thresh = 0.0
+    init_thresh = -2.0
     G_init = build_circuit_graph(results, init_thresh)
     draw_graph(G_init, init_thresh, ax)
 
     ax_slider = plt.axes([0.1, 0.05, 0.8, 0.05])
-    slider = Slider(ax_slider, 'Threshold', -1.0, 1.0, valinit=init_thresh, valstep=0.01)
+    slider = Slider(ax_slider, 'Threshold', -2, 2, valinit=init_thresh, valstep=0.01)
 
     def update(val):
         thresh = slider.val

@@ -127,14 +127,17 @@ def create_heatmap_figure(matrix_data, layer_index, head_index, tokens=[]):
     try:
         attn_matrix = np.array(matrix_data)
         if len(attn_matrix.shape) == 3 and 0 <= head_index < attn_matrix.shape[0]:
-            head_matrix = attn_matrix[head_index]
+            head_matrix = attn_matrix[head_index][10:,10:]
+            # breakpoint()
             fig = go.Figure(data=go.Heatmap(z=head_matrix, colorscale='Viridis'))
-            
             if len(tokens) > 0:
+                # Create numbered token labels: "0: <token>"
+                numbered_tokens = [f"{i}: {token}" for i, token in enumerate(tokens)]
+                
                 fig.update_xaxes(
                     tickmode='array',
-                    tickvals=list(range(10,len(tokens)+10)),
-                    ticktext=tokens,
+                    tickvals=list(range(len(tokens))),
+                    ticktext=numbered_tokens,
                     title='Tokens',
                     ticks='outside',
                     tickangle=-45,
@@ -142,17 +145,13 @@ def create_heatmap_figure(matrix_data, layer_index, head_index, tokens=[]):
                 )
                 fig.update_yaxes(
                     tickmode='array',
-                    tickvals=list(range(10,len(tokens)+10)),
-                    ticktext=tokens,
+                    tickvals=list(range(len(tokens))),
+                    ticktext=numbered_tokens,
                     title='Tokens',
                     ticks='outside',
                     tickangle=-45,
                     automargin=True
                 )
-            
-            # set minimum x and y to 10
-            fig.update_xaxes(range=[10, len(tokens) + 10])
-            fig.update_yaxes(range=[10, len(tokens) + 10])
             
             fig.update_layout(
                 title=f"Layer {layer_index}, Head {head_index} Attention",
@@ -305,11 +304,26 @@ app.layout = html.Div([
 @callback(
     Output('sample-selector', 'options'),
     Output('sample-selector', 'value'),
-    Input('sample-type-selector', 'value')
+    Input('sample-type-selector', 'value'),
+    State('sample-selector', 'value')  # Preserve current selection if possible
 )
-def update_sample_dropdown(selected_type):
+def update_sample_dropdown(selected_type, current_value):
     options = sample_options.get(selected_type, [])
-    value = options[0]['value'] if options else None
+    
+    # Try to preserve the current selection by finding a file with the same basename
+    value = None
+    if current_value and options:
+        current_basename = os.path.basename(current_value)
+        # Look for a file with the same basename in the new sample type
+        for option in options:
+            if os.path.basename(option['value']) == current_basename:
+                value = option['value']
+                break
+    
+    # If we couldn't preserve the selection, use the first option
+    if value is None and options:
+        value = options[0]['value']
+    
     return options, value
 
 # 2) Load Selected Sample Data
@@ -336,17 +350,27 @@ def load_selected_sample_data(selected_file_path):
 def store_selected_node(node_data):
     return node_data
 
+# 3b) Clear Selected Node when sample type or data changes
+# @callback(
+#     Output('selected-node-store', 'data', allow_duplicate=True),
+#     Input('sample-type-selector', 'value'),
+#     Input('loaded-data-store', 'data'),
+#     prevent_initial_call=True
+# )
+# def clear_selected_node_on_data_change(sample_type, loaded_data):
+#     return None
+
 # 4) Display Node Data
 @callback(
     Output('node-data-output', 'children'),
     Output('attention-control-panel', 'style'),  # We'll show/hide the attention panel
     Input('selected-node-store', 'data'),
-    State('loaded-data-store', 'data'),
+    Input('loaded-data-store', 'data'),  # Changed from State to Input so it refreshes when data changes
     prevent_initial_call=True
 )
 def display_node_data(node_data, loaded_data):
-    if not node_data or not loaded_data:
-        return ("Click a node in the graph to see its data for the selected sample.", {'display': 'none'})
+    if not loaded_data:
+        return ("Loading data...", {'display': 'none'})
     if "error" in loaded_data:
         return (
             html.Div([
@@ -355,6 +379,8 @@ def display_node_data(node_data, loaded_data):
             ], style={'color': 'red'}),
             {'display': 'none'}
         )
+    if not node_data:
+        return ("Click a node in the graph to see its data for the selected sample.", {'display': 'none'})
 
     node_id = node_data['id']
     node_type = node_data.get('type')
@@ -680,12 +706,12 @@ def display_node_data(node_data, loaded_data):
         return (children, {'display': 'none'})  
 
 
-# 5) Update the Attention Heatmap whenever the user selects a head
+# 5) Update the Attention Heatmap whenever the user selects a head, data changes, or node changes
 @callback(
     Output('attention-head-heatmap', 'figure'),
     Input('attention-head-selector', 'value'),
-    State('selected-node-store', 'data'),
-    State('loaded-data-store', 'data'),
+    Input('selected-node-store', 'data'),  # Changed from State to Input so it updates when node changes
+    Input('loaded-data-store', 'data'),  # Added as Input so it updates when data changes
     prevent_initial_call=True
 )
 def update_attention_heatmap(selected_head, node_data, loaded_data):
