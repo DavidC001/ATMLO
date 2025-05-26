@@ -62,7 +62,8 @@ def get_patching_metric(clean_probs):
     if clean_total_answer_prob > 0:
         clean_score = (clean_pos_prob - clean_neg_prob) / clean_total_answer_prob
     else:
-        clean_score = 0.0
+        clean_score = 0.001
+        print("Warning: Clean probabilities sum to less then zero, the model is not confident in its answer.")
     
     def patching_metric(logits):
         probs = torch.softmax(logits[0,-1, pos_answer_token_ids + neg_answer_token_ids], dim=-1)
@@ -78,8 +79,12 @@ def get_patching_metric(clean_probs):
         else:
             patched_score = 0.0
         
-        # Return the difference: positive when patching moves toward "Yes", negative when toward "No"
-        return patched_score - clean_score
+        # Return the difference: 
+        # x>1 means patching increased "Yes" probability, 
+        # x=1 means the full clean score was achieved, 
+        # 0<x<1 means restored some but not all of the clean score
+        # x<0 means the model still favors "No" after patching
+        return patched_score / clean_score if clean_score != 0 else 0.0
         
     return patching_metric
 
@@ -91,7 +96,7 @@ def get_activation_patching_results(model, corrupt_tokens, clean_cache, clean_pr
     print("Patching MLP outputs (mlp_out) layer-wise score")
     mlp_patches_all_pos = get_act_patch_mlp_out(model, corrupt_tokens, clean_cache, get_patching_metric(clean_probs))
     # Average over positions to get layer scores
-    mlp_patches = mlp_patches_all_pos.mean(dim=1)  # assuming dimension 1 is position
+    mlp_patches = mlp_patches_all_pos.max(dim=1).values  # assuming dimension 1 is position
     return z_patches, mlp_patches
 
 def average_results(results_list):
@@ -130,7 +135,7 @@ def main(num_runs=5, max_duration_secs=None):
     avg_results_out = {k: v.numpy().tolist() for k, v in avg_results.items()}
 
     output_path = os.path.join(base_path, f"average_activation_patch_results.json")
-    os.makedirs(os.path.dirname(base_path), exist_ok=True)
+    os.makedirs(base_path, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(avg_results_out, f, indent=4)
     print(f"Saved averaged activation patching results to {output_path}")

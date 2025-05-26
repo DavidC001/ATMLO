@@ -88,7 +88,7 @@ For the single-sample patching, you can run:
 python patching/activation_patch_analysis.py
 ```
 This will create a directory in `results/{model_name}/patching/` with the patching results for the specified model.
-These can later be visualized using the provided visualization script `viz/token_level_patching.py` and passing the argument `-i {file_path}`. You can also use the `viz/avg_patching.py` script to visualize the result at layer level (we use the mean value).
+These can later be visualized using the provided visualization script `viz/token_level_patching.py` and passing the argument `-i {file_path}`. You can also use the `viz/avg_patching.py` script to visualize the result at layer level (we use the max value).
 
 For the multi-sample patching, you can use:
 ```bash

@@ -62,7 +62,8 @@ def get_patching_metric(clean_probs):
     if clean_total_answer_prob > 0:
         clean_score = (clean_pos_prob - clean_neg_prob) / clean_total_answer_prob
     else:
-        clean_score = 0.0
+        clean_score = 0.001
+        print("Warning: Clean probabilities sum to less then zero, the model is not confident in its answer.")
     
     def patching_metric(logits):
         probs = torch.softmax(logits[0,-1, pos_answer_token_ids + neg_answer_token_ids], dim=-1)
@@ -78,8 +79,12 @@ def get_patching_metric(clean_probs):
         else:
             patched_score = 0.0
         
-        # Return the difference: positive when patching moves toward "Yes", negative when toward "No"
-        return patched_score - clean_score
+        # Return the difference: 
+        # x>1 means patching increased "Yes" probability, 
+        # x=1 means the full clean score was achieved, 
+        # 0<x<1 means restored some but not all of the clean score
+        # x<0 means the model still favors "No" after patching
+        return patched_score / clean_score if clean_score != 0 else 0.0
         
     return patching_metric
 
@@ -114,7 +119,7 @@ def main():
     }
 
     output_path = os.path.join(base_path, f"activation_patch_results.json")
-    os.makedirs(os.path.dirname(base_path), exist_ok=True)
+    os.makedirs(base_path, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(results_out, f, indent=4)
     print(f"Saved averaged activation patching results to {output_path}")

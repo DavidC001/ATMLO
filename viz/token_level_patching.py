@@ -29,7 +29,7 @@ def build_circuit_graph(results, threshold=0.0):
     for layer_idx, pos_scores in enumerate(z_scores):
         for pos, head_scores in enumerate(pos_scores):
             for head_idx, score in enumerate(head_scores):
-                if score <= threshold:
+                if score >= threshold:
                     clean_tok = clean_tokens[pos] if pos < len(clean_tokens) else ""
                     corrupt_tok = corrupt_tokens[pos] if pos < len(corrupt_tokens) else ""
                     name = f"Attn_L{layer_idx}H{head_idx}_P{pos}"
@@ -48,7 +48,7 @@ def build_circuit_graph(results, threshold=0.0):
     # MLP nodes: (layer, pos)
     for layer_idx, layer_scores in enumerate(mlp_scores):
         for pos, score in enumerate(layer_scores):
-            if score <= threshold:
+            if score >= threshold:
                 clean_tok = clean_tokens[pos] if pos < len(clean_tokens) else ""
                 corrupt_tok = corrupt_tokens[pos] if pos < len(corrupt_tokens) else ""
                 name = f"MLP_L{layer_idx}_P{pos}"
@@ -121,7 +121,7 @@ def visualize_interactive(results):
     """Launch an interactive plot with a threshold slider."""
     fig, ax = plt.subplots(figsize=(12, 8))
     plt.subplots_adjust(bottom=0.2)
-    init_thresh = -2.0
+    init_thresh = 2.0
     G_init = build_circuit_graph(results, init_thresh)
     draw_graph(G_init, init_thresh, ax)
 

@@ -25,21 +25,21 @@ def build_circuit_graph(results, threshold=0.0):
             num_tokens = len(layer_heads)
             num_heads = len(layer_heads[0])
             layer_heads = [[layer_heads[j][i] for i in range(num_heads)] for j in range(num_tokens)]
-            layer_heads = [mean(head_scores) for head_scores in layer_heads]
+            layer_heads = [max(head_scores) for head_scores in layer_heads]
             
         for head_idx, score in enumerate(layer_heads):
             # Filter by threshold
-            if score <= threshold:
+            if score >= threshold:
                 name = f"Attn_L{layer_idx}H{head_idx}"
                 G.add_node(name, score=score, type='attn')
 
     # Add MLP nodes
     for layer_idx, score_data in enumerate(mlp_scores):
         if isinstance(score_data, list):
-            score_val = mean(score_data) if score_data else 0.0
+            score_val = max(score_data) if score_data else 0.0
         else:
             score_val = score_data
-        if score_val <= threshold:
+        if score_val >= threshold:
             name = f"MLP_L{layer_idx}"
             G.add_node(name, score=score_val, type='mlp')
 
@@ -106,7 +106,7 @@ def visualize_interactive(results):
     """Launch an interactive plot with a threshold slider."""
     fig, ax = plt.subplots(figsize=(12, 8))
     plt.subplots_adjust(bottom=0.2)
-    init_thresh = -2.0
+    init_thresh = 2.0
     G_init = build_circuit_graph(results, init_thresh)
     draw_graph(G_init, init_thresh, ax)
 

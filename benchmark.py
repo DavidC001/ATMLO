@@ -106,7 +106,7 @@ for template, model_name in zip(config.benchmark.templates, config.benchmark.mod
         os.makedirs(f"datasets/circ_disc/{model_name}/{key}", exist_ok=True)
         with open(f"datasets/circ_disc/{model_name}/{key}/dataset.json", "w") as f:
             json.dump(model_dataset, f, indent=4)
-        print(f"Dataset saved to datasets/{model_name}/{key}/dataset.json")
+        print(f"Dataset saved to datasets/circ_disc/{model_name}/{key}/dataset.json")
         print("Done")
         print("========================================")
         

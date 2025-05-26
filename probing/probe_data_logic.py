@@ -100,7 +100,7 @@ def get_mlp_hook(layer_num):
     """
     def hook(module, input, output):
         before = input[0][:,-1]
-        after = output[:,-1] # + input[0][:,-1]
+        after = output[:,-1] + input[0][:,-1]
         
         # apply layer normalization to the MLP output
         if layer_num < len(model.model.layers) - 1:
@@ -139,7 +139,6 @@ def get_mlp_hook(layer_num):
         top_tokens_values_a = top_tokens_values_a.detach().cpu()
         top_tokens_ids_a = top_tokens_ids_a.detach().cpu()
         
-            
         if (layer_num,"after") not in mlp_records:
             mlp_records[(layer_num,"before")] = list(before)
             mlp_records[(layer_num,"after")] = list(after)
@@ -170,6 +169,7 @@ for layer_idx, layer_module in enumerate(model.model.layers):
 
 
 # --------------- 3. Run the model on a prompt ---------------
+batch_size = 8
 data = get_dataloader(
     input_jsons=[    
         "datasets/LogicBench/LogicBench(Aug)/propositional_logic/modus_tollens/data.json",
@@ -178,13 +178,14 @@ data = get_dataloader(
     template="qwen",
     tokenizer=tokenizer,
     global_padding=False,
-    batch_size=8
+    batch_size=batch_size
 )
 
 processed_samples = 0
+processed_batches = 0
+max_batches = 10  # Limit the number of samples to process
 
-for sample in tqdm(data):
-    
+for sample in tqdm(data, total=min(max_batches, len(data))):
     text = sample["text"]
     inputs = sample["input_ids"].to(device)
     attention_mask = sample["attention_mask"].to(device)
@@ -210,7 +211,7 @@ for sample in tqdm(data):
             else:
                 type = "corrupt"
             
-            json_path = os.path.join(out_path, type, f"{i+processed_samples-(i+processed_samples)%2}.json")
+            json_path = os.path.join(out_path, type, f"{(i+processed_samples-(i+processed_samples)%2)//2}.json")
             os.makedirs(os.path.dirname(json_path), exist_ok=True)
             # print(f"Saving {json_path}")
             with open(json_path, "w") as f:
@@ -223,5 +224,10 @@ for sample in tqdm(data):
     
     # free up memory
     torch.cuda.empty_cache()
+    
+    processed_batches += 1
+    
+    if processed_batches >= max_batches:
+        break
 
 print("MODEL FORWARD COMPLETED")

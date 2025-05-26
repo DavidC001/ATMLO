@@ -103,10 +103,10 @@ def get_mlp_hook(layer_num):
     """
     def hook(module, input, output):
         before = input[0][:,-1]
-        after = output[:,-1]
+        after = output[:,-1] + input[0][:,-1]
         
         # apply layer normalization to the MLP output
-        if layer_idx < len(model.model.layers) - 1:
+        if layer_num < len(model.model.layers) - 1:
             after_ln = model.model.layers[layer_num+1].input_layernorm(
                 after
             )
@@ -142,7 +142,6 @@ def get_mlp_hook(layer_num):
         top_tokens_values_a = top_tokens_values_a.detach().cpu()
         top_tokens_ids_a = top_tokens_ids_a.detach().cpu()
         
-            
         if (layer_num,"after") not in mlp_records:
             mlp_records[(layer_num,"before")] = list(before)
             mlp_records[(layer_num,"after")] = list(after)
