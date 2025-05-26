@@ -30,7 +30,7 @@ prompt_template = {
     "qwen": qwen_template,
 }
 
-def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama_3", global_padding=False, tokenizer=None):
+def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama_3", global_padding=False, tokenizer=None, alignment=True):
     """
     Create a dataset from the input json files and save it to the output json file.
     
@@ -40,6 +40,7 @@ def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama
         template: template to use for the dataset
         global_padding: if True, pad the input ids to the same length
         tokenizer: tokenizer object, required if global_padding is True
+        alignment: if True, align the dataset with the tokenizer so that all pairs of clean and corrupt prompts have the same length
         
     Returns:
         The number of samples in the dataset
@@ -65,7 +66,7 @@ def create_dataset(input_jsons, out_json="datasets/data.json", template = "llama
                 sample["corrupt"] = prompt_template[template] % (instruction, sample["corrupt"])
                 
             # if tokenizer is not None verify that the clean and corrupt prompts are the same length
-            if tokenizer is not None:
+            if tokenizer is not None and alignment:
                 assert len(tokenizer.encode(sample["clean"], add_special_tokens=False)) == len(tokenizer.encode(sample["corrupt"], add_special_tokens=False)), f"Clean and corrupt prompts have different lengths: {len(tokenizer.encode(sample['clean'], add_special_tokens=False))} vs {len(tokenizer.encode(sample['corrupt'], add_special_tokens=False))}"
             
         

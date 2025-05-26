@@ -9,6 +9,7 @@ import sys
 sys.path.append(".")
 
 from utils.dataloader import get_dataloader
+from utils.preprocess.preprocess import preprocess_LogicBench
 
 exp_name = "modus_tollens"
 interest_tokens = [
@@ -170,14 +171,33 @@ for layer_idx, layer_module in enumerate(model.model.layers):
 
 # --------------- 3. Run the model on a prompt ---------------
 batch_size = 8
+alignment = False
+# preprocess dataset
+input_jsons=[    
+    f"LogicBench/data/LogicBench(Aug)/propositional_logic/{exp_name}/data_instances.json",
+    f"LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/{exp_name}/data_instances.json",
+]
+out_jsons = [
+    f"datasets/LogicBench/LogicBench(Aug)/propositional_logic/{exp_name}/data.json",
+    f"datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/{exp_name}/data.json",
+]
+for i, input_json in enumerate(input_jsons):
+    out_json = out_jsons[i]
+    preprocess_LogicBench(
+        model_name=model_name,
+        file=input_json,
+        out=out_json,
+        tokenizer=tokenizer,
+        format="ACDC",
+        alignment = alignment,
+    )
+
 data = get_dataloader(
-    input_jsons=[    
-        "datasets/LogicBench/LogicBench(Aug)/propositional_logic/modus_tollens/data.json",
-        "datasets/LogicBench/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data.json",
-    ],
+    input_jsons=out_jsons,
     template="qwen",
     tokenizer=tokenizer,
     global_padding=False,
+    alignment = alignment,
     batch_size=batch_size
 )
 

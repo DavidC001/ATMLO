@@ -113,10 +113,9 @@ def main():
         "MLP_layer14_after_ln",
         "MLP_layer16_after_ln",
         "MLP_layer21_after_ln",
-        "MLP_layer27_after_ln",
     ]
     train_loader, test_loader = get_dataloader(
-        base_dataset_path="datasets\probing\Qwen\Qwen2.5-1.5B-Instruct\modus_tollens",
+        base_dataset_path="datasets/probing/Qwen/Qwen2.5-1.5B-Instruct/price_game",
         layers=layers,
         train_test_split=0.8,
         batch_size=32

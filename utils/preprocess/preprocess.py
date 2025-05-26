@@ -18,7 +18,7 @@ data_types = ["LogicBench(Aug)","LogicBench(Eval)/BQA"]
 
 bar = tqdm()
 
-def preprocess_old(model_name, tokenizer=None, format="ACDC"):
+def preprocess_LogicBench_generic(format="ACDC"):
     """
     For ACDC preprocess the LogicBench dataset to create a json file with the following format:
     {
@@ -46,16 +46,11 @@ def preprocess_old(model_name, tokenizer=None, format="ACDC"):
     [all the others...]
     
     Args:
-        model_name (str): The name of the model to use for tokenization.
-        tokenizer (AutoTokenizer): The tokenizer to use for tokenization. If None, the tokenizer will be loaded from the model_name.
         format (str): The format to use for the output data. Can be "ACDC" or "feat-circ".
         
     Returns:
         None
     """
-    
-    if tokenizer is None:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     for data_type in data_types:
         
@@ -103,27 +98,12 @@ def preprocess_old(model_name, tokenizer=None, format="ACDC"):
                     corrupt_idx = 1
                     corrupt = sample["qa_pairs"][corrupt_idx]["question"]
                     
-                    # tokenize both and check if they match
-                    tokenized_clean = len(tokenizer.tokenize(clean))
-                    tokenized_corrupt = len(tokenizer.tokenize(corrupt))
-                    
                     clean = "\n" + context + "\n" + clean
                     corrupt = "\n" + context + "\n" + corrupt
                     
                     if format == "feat-circ":
                         clean = instruction + clean
                         corrupt = instruction + corrupt
-                    
-                    while tokenized_corrupt != tokenized_clean:
-                        
-                        if tokenized_corrupt < tokenized_clean:
-                            corrupt = "\n" + corrupt
-                            tokenized_corrupt = len(tokenizer.tokenize(corrupt))
-                        else:
-                            clean = "\n" + clean
-                            tokenized_clean = len(tokenizer.tokenize(clean))
-                    
-                    assert tokenized_corrupt == tokenized_clean, f"the prompts do not have the same lenght clean:{tokenized_clean} corrupt:{tokenized_corrupt}\nclean: {clean}\ncorrupt: {corrupt}"
                     
                     inverse = random.randint(0, 1)
                     if inverse == 1:
@@ -155,7 +135,7 @@ def preprocess_old(model_name, tokenizer=None, format="ACDC"):
                 bar.update()
 
 
-def preprocess_LogicBench(model_name, file, out, tokenizer=None, format="ACDC"):
+def preprocess_LogicBench(model_name, file, out, tokenizer=None, format="ACDC", alignment=True):
     """
     For ACDC preprocess the LogicBench dataset to create a json file with the following format:
     {
@@ -188,6 +168,7 @@ def preprocess_LogicBench(model_name, file, out, tokenizer=None, format="ACDC"):
         out (str): The name of the output file.
         tokenizer (AutoTokenizer): The tokenizer to use for tokenization. If None, the tokenizer will be loaded from the model_name.
         format (str): The format to use for the output data. Can be "ACDC" or "feat-circ".
+        alignment (bool): If True, align the dataset with the tokenizer so that all pairs of clean and corrupt prompts have the same length.
         
     Returns:
         None
@@ -242,7 +223,7 @@ def preprocess_LogicBench(model_name, file, out, tokenizer=None, format="ACDC"):
             clean = instruction + clean
             corrupt = instruction + corrupt
         
-        while tokenized_corrupt != tokenized_clean:
+        while tokenized_corrupt != tokenized_clean and alignment:
             
             if tokenized_corrupt < tokenized_clean:
                 corrupt = "\n" + corrupt
@@ -251,7 +232,7 @@ def preprocess_LogicBench(model_name, file, out, tokenizer=None, format="ACDC"):
                 clean = "\n" + clean
                 tokenized_clean = len(tokenizer.tokenize(clean))
         
-        assert tokenized_corrupt == tokenized_clean, f"the prompts do not have the same lenght clean:{tokenized_clean} corrupt:{tokenized_corrupt}\nclean: {clean}\ncorrupt: {corrupt}"
+        assert tokenized_corrupt == tokenized_clean or not alignment, f"the prompts do not have the same lenght clean:{tokenized_clean} corrupt:{tokenized_corrupt}\nclean: {clean}\ncorrupt: {corrupt}"
         
         inverse = 0
         if inverse == 1:
@@ -288,4 +269,4 @@ if __name__ == "__main__":
     random.seed(42)
     
     conf:ProjectConfig = load_yaml_config("conf.yaml")
-    preprocess_old("EleutherAI/pythia-70m-deduped", format="feat-circ")
+    preprocess_LogicBench_generic(format="ACDC")

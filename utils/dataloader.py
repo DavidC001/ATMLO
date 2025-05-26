@@ -7,13 +7,14 @@ from tqdm import tqdm
 
 class AC_data(Dataset):
     
-    def __init__(self, input_jsons, template, tokenizer, global_padding=False):
+    def __init__(self, input_jsons, template, tokenizer, global_padding=False, alignment=True):
         """
         Args:
             input_jsons: list of json files to load
             template: template to use for the dataset
             tokenizer: tokenizer object
             global_padding: if True, pad the input ids to the same length
+            alignment: if True, align the dataset with the tokenizer so that all pairs of clean and corrupt prompts have the same length
             
         """
         super().__init__()
@@ -31,6 +32,7 @@ class AC_data(Dataset):
             template=template,
             global_padding=global_padding,
             tokenizer=tokenizer,
+            alignment=alignment
         )
         
         # load the data from the json
@@ -91,7 +93,7 @@ def collate_fn(batch):
         "wrong": [item["wrong"] for item in batch],
     }
     
-def get_dataloader(input_jsons, template, tokenizer, batch_size=32, global_padding=False, split=False):
+def get_dataloader(input_jsons, template, tokenizer, batch_size=32, global_padding=False, alignment=True, split=False):
     """
     Returns a DataLoader for the given dataset.
     
@@ -101,12 +103,13 @@ def get_dataloader(input_jsons, template, tokenizer, batch_size=32, global_paddi
         tokenizer: tokenizer object
         batch_size: batch size for the DataLoader
         global_padding: if True, pad the input ids to the same length
+        alignment: if True, align the dataset with the tokenizer so that all pairs of clean and corrupt prompts have the same length
         split: if True, split the dataset into train and test sets
         
     Returns:
         DataLoader object | tuple of DataLoader objects (train, test) if split is True
     """
-    dataset = AC_data(input_jsons, template, tokenizer, global_padding)
+    dataset = AC_data(input_jsons, template, tokenizer, global_padding, alignment)
     
     # If split is True, we can split the dataset into train and test sets
     if split:
