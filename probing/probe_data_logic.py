@@ -183,7 +183,7 @@ data = get_dataloader(
 
 processed_samples = 0
 processed_batches = 0
-max_batches = 10  # Limit the number of samples to process
+max_batches = len(data)  # Limit the number of samples to process
 
 for sample in tqdm(data, total=min(max_batches, len(data))):
     text = sample["text"]

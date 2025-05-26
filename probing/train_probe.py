@@ -91,33 +91,36 @@ def train_probe_model(model, train_loader, test_loader, num_epochs=10, learning_
 
 def main():
     # Load the dataset
-    layers=[
-        "MLP_layer1_after_ln", 
-        "MLP_layer3_after_ln", 
-        "MLP_layer5_after_ln", 
-        "MLP_layer8_after_ln",
-        "MLP_layer10_after_ln"
-    ]
-    train_loader, test_loader = get_dataloader(
-        base_dataset_path="datasets\probing\meta-llama\Llama-3.2-1B-Instruct\price_game",
-        layers=layers,
-        train_test_split=0.8,
-        batch_size=32
-    )
     # layers=[
     #     "MLP_layer1_after_ln", 
     #     "MLP_layer3_after_ln", 
     #     "MLP_layer5_after_ln", 
     #     "MLP_layer8_after_ln",
-    #     "MLP_layer10_after_ln",
-    #     "MLP_layer16_after_ln"
+    #     "MLP_layer10_after_ln"
     # ]
     # train_loader, test_loader = get_dataloader(
-    #     base_dataset_path="datasets\probing\Qwen\Qwen2.5-1.5B-Instruct\modus_tollens",
+    #     base_dataset_path="datasets\probing\meta-llama\Llama-3.2-1B-Instruct\price_game",
     #     layers=layers,
-    #     train_test_split=0.5,
+    #     train_test_split=0.8,
     #     batch_size=32
     # )
+    layers=[
+        "MLP_layer1_after_ln", 
+        "MLP_layer3_after_ln", 
+        "MLP_layer5_after_ln", 
+        "MLP_layer8_after_ln",
+        "MLP_layer10_after_ln",
+        "MLP_layer14_after_ln",
+        "MLP_layer16_after_ln",
+        "MLP_layer21_after_ln",
+        "MLP_layer27_after_ln",
+    ]
+    train_loader, test_loader = get_dataloader(
+        base_dataset_path="datasets\probing\Qwen\Qwen2.5-1.5B-Instruct\modus_tollens",
+        layers=layers,
+        train_test_split=0.8,
+        batch_size=32
+    )
     
     models = {}
     for layer in layers:

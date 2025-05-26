@@ -13,11 +13,7 @@ alpaca_prompt_template = f"""Below is an instruction that describes a task, pair
 ### Response:
 """
 
-llama_3prompt_template = f"""<|start_header_id|>system<|end_header_id|>
-
-%s <|eot_id|><|start_header_id|>user<|end_header_id|>
-%s <|eot_id|><|start_header_id|>assistant<|end_header_id|>
-"""
+llama_3prompt_template = f"""<|start_header_id|>system<|end_header_id|>%s<|eot_id|><|start_header_id|>user<|end_header_id|>%s<|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
 
 qwen_template = f"""<|im_start|>system
 %s<|im_end|>
