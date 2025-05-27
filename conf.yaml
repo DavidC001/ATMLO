@@ -1,4 +1,4 @@
-exp_name: "ACDC_converted"
+exp_name: "ACDC_price"
 
 seed: 42
 
@@ -9,10 +9,10 @@ benchmark:
   global_padding: False
 
   input_jsons: {
-    modus_tollens: [
-      "LogicBench/data/LogicBench(Aug)/propositional_logic/modus_tollens/data_instances.json",
-      "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data_instances.json",
-    ],
+    # modus_tollens: [
+    #   "LogicBench/data/LogicBench(Aug)/propositional_logic/modus_tollens/data_instances.json",
+    #   "LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/modus_tollens/data_instances.json",
+    # ],
     # bidirectional_dilemma: [
     #   "LogicBench/data/LogicBench/LogicBench(Aug)/propositional_logic/bidirectional_dilemma/data_instances.json",
     #   "LogicBench/data/LogicBench/LogicBench(Eval)/BQA/propositional_logic/bidirectional_dilemma/data_instances.json",
@@ -74,23 +74,24 @@ circuit_discovery:
   # model_name: "gpt2-xl"
   # model_name: 'EleutherAI/pythia-410m'
   # model_name: 'EleutherAI/pythia-14m'
-  # model_name: "Qwen/Qwen2.5-1.5B-Instruct"
-  model_name: "Qwen/Qwen2.5-0.5B-Instruct"
+  model_name: "Qwen/Qwen2.5-1.5B-Instruct"
+  # model_name: "Qwen/Qwen2.5-0.5B-Instruct"
   device: "cuda"
   
-  dataset: "converted_modus_tollens"
+  dataset: "price_game"
+  filtered: False
 
   batch_size: 8
   train_percent: 0.8
 
-  threshold: 5e-3
+  threshold: 0.07
 
   tokenGraph: False
 
   method: "ACDC" # "mask_gradient" or "ACDC" or "edge_attribution_patching"
 
   tao_exps: [-2]
-  tao_bases: [5]
+  tao_bases: [9]
 
 
 # probing_data:

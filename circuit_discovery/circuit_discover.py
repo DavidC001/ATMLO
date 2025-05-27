@@ -17,6 +17,7 @@ import sys
 sys.path.append(".")
 
 from config import ProjectConfig, load_yaml_config
+from utils.preprocess.preprocess import preprocess_LogicBench
 
 config:ProjectConfig = load_yaml_config("conf.yaml")
 
@@ -27,15 +28,70 @@ device = config.circuit_discovery.device
 
 model = load_tl_model(config.circuit_discovery.model_name, device=device)
 
-path = Path(f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}/dataset.json")
-# check if the dataset exists
-assert os.path.exists(path), f"Dataset not found at {path}, run benchmark.py to create it with the wanted model"
+if config.circuit_discovery.filtered:
+    path = Path(f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}/dataset.json")
+    # check if the dataset exists
+    assert os.path.exists(path), f"Dataset not found at {path}, run benchmark.py to create it with the wanted model"
 
-# load json to see dimension of the dataset
-num_samples = 0
-with open(path) as f:
-    data = json.load(f)
-    num_samples = data["dataset_size"]
+    # load json to see dimension of the dataset
+    num_samples = 0
+    with open(path) as f:
+        data = json.load(f)
+        num_samples = data["dataset_size"]
+elif config.circuit_discovery.dataset != "price_game":
+    dataset_files = [
+        f"LogicBench/data/LogicBench(Aug)/propositional_logic/{config.circuit_discovery.dataset}/data_instances.json",
+        f"LogicBench/data/LogicBench(Eval)/BQA/propositional_logic/{config.circuit_discovery.dataset}/data_instances.json",
+    ]
+    combined_json = {}
+    for i, file in enumerate(dataset_files):
+        preprocess_LogicBench(
+            model_name=config.circuit_discovery.model_name,
+            file=file,
+            out=f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}_unfiltered/dataset{i}.json",
+            format="ACDC",
+            tokenizer=model.tokenizer,
+            alignment=True,
+        )
+        # combine the two datasets
+        with open(f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}_unfiltered/dataset{i}.json") as f:
+            data = json.load(f)
+            if i == 0:
+                combined_json = data
+            else:
+                combined_json["prompts"].extend(data["prompts"])
+    # save the combined json
+    path = Path(f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}_unfiltered/dataset.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(combined_json, f, indent=4)
+        
+    # set train and test size
+    num_samples = len(combined_json["prompts"])
+elif config.circuit_discovery.dataset == "price_game":
+    # for price game, we use the dataset from the benchmark
+    dataset_files = [
+      "datasets/price_game/train.json",
+      "datasets/price_game/eval.json"
+    ]
+    combined_json = {}
+    for i, file in enumerate(dataset_files):
+        with open(file) as f:
+            data = json.load(f)
+            if i == 0:
+                combined_json = data
+            else:
+                combined_json["prompts"].extend(data["prompts"])
+    # save the combined json
+    path = Path(f"{config.benchmark.dataset_dir}/circ_disc/{config.circuit_discovery.model_name}/{config.circuit_discovery.dataset}_unfiltered/dataset.json")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(combined_json, f, indent=4)
+
+    # set train and test size
+    num_samples = len(combined_json["prompts"])
+
+
 train_size = int(num_samples * config.circuit_discovery.train_percent)
 test_size = num_samples - train_size
 print(f"Dataset size: {num_samples}")

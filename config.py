@@ -62,6 +62,10 @@ class CircuitDiscConf:
     """
     The dataset to use for training from the ones available for the selected model.
     """
+    filtered: bool = True
+    """
+    If True, the dataset used will be composed of only the correctly classified examples.
+    """
     
     tokenGraph: bool = False
     """
