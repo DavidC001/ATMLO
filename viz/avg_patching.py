@@ -24,7 +24,7 @@ def build_circuit_graph(results, threshold=0.0):
             # trasnpose to get heads as outer list
             num_tokens = len(layer_heads)
             num_heads = len(layer_heads[0])
-            layer_heads = [[layer_heads[j][i] for i in range(num_heads)] for j in range(num_tokens)]
+            layer_heads = [[layer_heads[j][i] for j in range(num_tokens)] for i in range(num_heads)]
             layer_heads = [max(head_scores) for head_scores in layer_heads]
             
         for head_idx, score in enumerate(layer_heads):

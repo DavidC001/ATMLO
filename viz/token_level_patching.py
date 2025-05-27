@@ -14,7 +14,7 @@ def load_patch_results(path):
         return json.load(f)
 
 
-def build_circuit_graph(results, threshold=0.0):
+def build_circuit_graph(results, threshold=0.0, invert=False):
     """Build a token-level directed graph of attention heads and MLP layers.
     Each node is (layer, head/mlp, token position), labeled with clean/corrupt token strings."""
     G = nx.DiGraph()
@@ -29,7 +29,7 @@ def build_circuit_graph(results, threshold=0.0):
     for layer_idx, pos_scores in enumerate(z_scores):
         for pos, head_scores in enumerate(pos_scores):
             for head_idx, score in enumerate(head_scores):
-                if score >= threshold:
+                if ((score >= threshold and not invert) or (invert and score <= threshold)):
                     clean_tok = clean_tokens[pos] if pos < len(clean_tokens) else ""
                     corrupt_tok = corrupt_tokens[pos] if pos < len(corrupt_tokens) else ""
                     name = f"Attn_L{layer_idx}H{head_idx}_P{pos}"
@@ -48,7 +48,7 @@ def build_circuit_graph(results, threshold=0.0):
     # MLP nodes: (layer, pos)
     for layer_idx, layer_scores in enumerate(mlp_scores):
         for pos, score in enumerate(layer_scores):
-            if score >= threshold:
+            if ((score >= threshold and not invert) or (invert and score <= threshold)):
                 clean_tok = clean_tokens[pos] if pos < len(clean_tokens) else ""
                 corrupt_tok = corrupt_tokens[pos] if pos < len(corrupt_tokens) else ""
                 name = f"MLP_L{layer_idx}_P{pos}"
@@ -117,12 +117,12 @@ def draw_graph(G, threshold, ax):
     ax.axis('off')
 
 
-def visualize_interactive(results):
+def visualize_interactive(results, invert=False):
     """Launch an interactive plot with a threshold slider."""
     fig, ax = plt.subplots(figsize=(12, 8))
     plt.subplots_adjust(bottom=0.2)
-    init_thresh = 2.0
-    G_init = build_circuit_graph(results, init_thresh)
+    init_thresh = 2.0 if not invert else -2.0
+    G_init = build_circuit_graph(results, init_thresh, invert=invert)
     draw_graph(G_init, init_thresh, ax)
 
     ax_slider = plt.axes([0.1, 0.05, 0.8, 0.05])
@@ -130,7 +130,7 @@ def visualize_interactive(results):
 
     def update(val):
         thresh = slider.val
-        G = build_circuit_graph(results, thresh)
+        G = build_circuit_graph(results, thresh, invert=invert)
         draw_graph(G, thresh, ax)
         fig.canvas.draw_idle()
 
@@ -154,11 +154,13 @@ def main():
                         help='Path to activation patching JSON file')
     parser.add_argument('--threshold', '-t', type=float, default=None,
                         help='Threshold for filtering nodes (if omitted, launch interactive view)')
+    parser.add_argument('--invert', action='store_true',
+                        help='Invert the threshold logic (show nodes below threshold)')
     args = parser.parse_args()
 
     results = load_patch_results(args.input)
     if args.threshold is None:
-        visualize_interactive(results)
+        visualize_interactive(results, args.invert)
     else:
         visualize_static(results, args.threshold)
 
