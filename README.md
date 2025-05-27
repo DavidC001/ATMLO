@@ -1,9 +1,7 @@
-# ATMLO: Automated Transformer Model Logic Operations
+# Advanced Topics in Machine Learning and Optimization Project
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
-ATMLO (Automated Transformer Model Logic Operations) is a comprehensive research framework for mechanistic interpretability of transformer models, with a focus on understanding logical reasoning capabilities. The repository combines state-of-the-art circuit discovery techniques, activation patching analysis, and probing methods to investigate how transformer models process and represent logical information.
 
 ## 🚀 Key Features
 
