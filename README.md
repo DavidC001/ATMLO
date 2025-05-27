@@ -3,6 +3,10 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+<p align="center">
+<img src="https://github.com/user-attachments/assets/0ec2af5d-e918-4723-af1a-09525bc53699" width="25%"/>
+</p>
+
 ## 🚀 Key Features
 
 - **Circuit Discovery**: Implements multiple algorithms including ACDC (Automated Circuit DisCovery), Edge Attribution Patching, and Subnetwork Probing
