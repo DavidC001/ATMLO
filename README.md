@@ -21,22 +21,12 @@
 
 ```
 ATMLO/
-├── README.md                    # This file
-├── requirements.txt             # Python dependencies
-├── config.py                    # Main configuration settings
-├── conf.yaml                   # YAML configuration file
-├── benchmark.py                # Benchmarking pipeline
-├── report.tex                  # Research report (LaTeX)
-│
-├── auto-circuit/               # AutoCircuit library for circuit discovery
-│   ├── auto_circuit/          # Core circuit discovery algorithms
-│   ├── experiments/           # Experimental scripts and demos
-│   ├── datasets/              # Task-specific datasets
-│   └── docs/                  # Documentation
-│
-├── LogicBench/                # LogicBench dataset for logical reasoning
-│   ├── data/                  # Logic reasoning datasets
-│   └── README.md              # LogicBench documentation
+├── README.md                  # This file
+├── requirements.txt           # Python dependencies
+├── config.py                  # Main configuration settings
+├── conf.yaml                  # YAML configuration file
+├── benchmark.py               # Benchmarking pipeline
+├── entropy.py                 # Compute the entropy of the model decisions on the dataset
 │
 ├── circuit_discovery/         # Circuit discovery implementations
 ├── patching/                  # Activation patching analysis tools
