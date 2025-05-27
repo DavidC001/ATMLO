@@ -31,9 +31,8 @@ ATMLO/
 ├── circuit_discovery/         # Circuit discovery implementations
 ├── patching/                  # Activation patching analysis tools
 ├── probing/                   # Probing utilities and models
-├── datasets/                  # Experiment datasets and results
-├── results/                   # Experimental results storage
 ├── utils/                     # Utility functions and data loaders
+|
 └── viz/                       # Visualization tools and notebooks
 ```
 
