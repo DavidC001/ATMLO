@@ -1,9 +1,11 @@
-# ATMLO: Automated Transformer Model Logic Operations
+# Advanced Topics in Machine Learning and Optimization Project
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-ATMLO (Automated Transformer Model Logic Operations) is a comprehensive research framework for mechanistic interpretability of transformer models, with a focus on understanding logical reasoning capabilities. The repository combines state-of-the-art circuit discovery techniques, activation patching analysis, and probing methods to investigate how transformer models process and represent logical information.
+<p align="center">
+<img src="https://github.com/user-attachments/assets/0ec2af5d-e918-4723-af1a-09525bc53699" width="25%"/>
+</p>
 
 ## 🚀 Key Features
 
@@ -19,29 +21,18 @@ ATMLO (Automated Transformer Model Logic Operations) is a comprehensive research
 
 ```
 ATMLO/
-├── README.md                    # This file
-├── requirements.txt             # Python dependencies
-├── config.py                    # Main configuration settings
-├── conf.yaml                   # YAML configuration file
-├── benchmark.py                # Benchmarking pipeline
-├── report.tex                  # Research report (LaTeX)
-│
-├── auto-circuit/               # AutoCircuit library for circuit discovery
-│   ├── auto_circuit/          # Core circuit discovery algorithms
-│   ├── experiments/           # Experimental scripts and demos
-│   ├── datasets/              # Task-specific datasets
-│   └── docs/                  # Documentation
-│
-├── LogicBench/                # LogicBench dataset for logical reasoning
-│   ├── data/                  # Logic reasoning datasets
-│   └── README.md              # LogicBench documentation
+├── README.md                  # This file
+├── requirements.txt           # Python dependencies
+├── config.py                  # Main configuration settings
+├── conf.yaml                  # YAML configuration file
+├── benchmark.py               # Benchmarking pipeline
+├── entropy.py                 # Compute the entropy of the model decisions on the dataset
 │
 ├── circuit_discovery/         # Circuit discovery implementations
 ├── patching/                  # Activation patching analysis tools
 ├── probing/                   # Probing utilities and models
-├── datasets/                  # Experiment datasets and results
-├── results/                   # Experimental results storage
 ├── utils/                     # Utility functions and data loaders
+|
 └── viz/                       # Visualization tools and notebooks
 ```
 
